@@ -71,6 +71,11 @@
   --shadow-opacity: var(--shadow-opacity);
   --color-shadow-color: var(--shadow-color);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-dot-bg: var(--primary);
+  --color-dot-current: var(--primary);
+  --color-dot-passed: var(--muted-foreground);
+  --color-dot-future: var(--muted);
+  --color-dot-text: var(--primary);
 }
 
 :root {
@@ -245,4 +250,9 @@
     transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
     transition-duration: 200ms;
   }
+}
+
+@theme inline {
+  /* Calendar / Dot semantics */
+
 }

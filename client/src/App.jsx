@@ -218,6 +218,18 @@ const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 // ];
 const THEMES = [
   {
+    name: "CalWall Default",
+    emoji: "🛠️",
+    colors: {
+      bgcolor: '131314', // Zinc-900
+      passedcolor: '555555', // Zinc-400
+      currentcolor: 'd87943', // Amber-400
+      futurecolor: '888888', // Zinc-800
+      textcolor: 'd87943',
+      targetcolor: 'ef4444' // Primary
+    }
+  },
+  {
     name: "Tech Blue",
     emoji: "💻",
     colors: {
@@ -518,7 +530,8 @@ export default function App() {
   });
 
   // State for wallpaper customization
-  const [config, setConfig] = useState({
+  // Default Config
+  const defaultConfig = {
     width: 1080,
     height: 2400,
     mode: 'month',
@@ -527,18 +540,34 @@ export default function App() {
     paddingbottom: 0,
     paddingleft: 0,
     paddingright: 0,
-    bgcolor: '71717a',
-    passedcolor: 'f97316',
-    currentcolor: 'fbbf24',
-    futurecolor: '52525b',
-    textcolor: 'ffffff',
-    cols: 15,
+    bgcolor: '131314', // Zinc-900
+    passedcolor: '555555', // Zinc-400
+    currentcolor: 'd87943', // Amber-400
+    futurecolor: '888888', // Zinc-800
+    textcolor: 'd87943',
+    targetcolor: 'ef4444', // Primary
     cols: 15,
     dotradius: 1.0,
     useTarget: false,
     targetDate: '',
     targetTitle: '',
-    targetcolor: 'ef4444'
+    targetShape: 'circle'
+  };
+
+  // State for wallpaper customization ( Persisted )
+  const [config, setConfig] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('calwallConfig');
+      if (saved) {
+        try {
+          // Merge with default to ensure new fields (like targetShape) exist if loading old config
+          return { ...defaultConfig, ...JSON.parse(saved) };
+        } catch (e) {
+          console.error('Failed to parse saved config', e);
+        }
+      }
+    }
+    return defaultConfig;
   });
 
   const [wallpaperUrl, setWallpaperUrl] = useState('');
@@ -546,8 +575,20 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [carouselApi, setCarouselApi] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [selectedDevice, setSelectedDevice] = useState('');
-  const [selectedTheme, setSelectedTheme] = useState('');
+
+  const [selectedDevice, setSelectedDevice] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedDevice') || '';
+    }
+    return '';
+  });
+
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedTheme') || '';
+    }
+    return '';
+  });
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState('');
 
@@ -581,6 +622,19 @@ export default function App() {
   const toggleDarkMode = () => {
     setIsDarkMode(prev => !prev);
   };
+
+  // Persist User Configuration
+  useEffect(() => {
+    localStorage.setItem('calwallConfig', JSON.stringify(config));
+  }, [config]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedDevice', selectedDevice);
+  }, [selectedDevice]);
+
+  useEffect(() => {
+    localStorage.setItem('selectedTheme', selectedTheme);
+  }, [selectedTheme]);
 
   // Handle device selection
   const handleDeviceChange = (deviceIndex) => {
@@ -727,6 +781,54 @@ export default function App() {
     ctx.fillStyle = `#${config.bgcolor}`;
     ctx.fillRect(0, 0, config.width, config.height);
 
+    // Draw Shape Helper
+    const drawShape = (ctx, x, y, size, shape, color) => {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+
+      switch (shape) {
+        case 'square':
+          ctx.rect(x - size / 2, y - size / 2, size, size);
+          break;
+        case 'diamond':
+          ctx.moveTo(x, y - size / 2);
+          ctx.lineTo(x + size / 2, y);
+          ctx.lineTo(x, y + size / 2);
+          ctx.lineTo(x - size / 2, y);
+          ctx.closePath();
+          break;
+        case 'star':
+          const spikes = 5;
+          const outerRadius = size / 2;
+          const innerRadius = size / 4;
+          let rot = Math.PI / 2 * 3;
+          let cx = x;
+          let cy = y;
+          let step = Math.PI / spikes;
+
+          ctx.moveTo(cx, cy - outerRadius);
+          for (let i = 0; i < spikes; i++) {
+            cx = x + Math.cos(rot) * outerRadius;
+            cy = y + Math.sin(rot) * outerRadius;
+            ctx.lineTo(cx, cy);
+            rot += step;
+
+            cx = x + Math.cos(rot) * innerRadius;
+            cy = y + Math.sin(rot) * innerRadius;
+            ctx.lineTo(cx, cy);
+            rot += step;
+          }
+          ctx.lineTo(x, y - outerRadius);
+          ctx.closePath();
+          break;
+        case 'circle':
+        default:
+          ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+          break;
+      }
+      ctx.fill();
+    };
+
     // Draw dots
     for (let i = 0; i < totalDays; i++) {
       const row = Math.floor(i / config.cols);
@@ -734,31 +836,36 @@ export default function App() {
       const x = startX + col * spacing + spacing / 2;
       const y = startY + row * spacing + spacing / 2;
 
-      ctx.beginPath();
-      ctx.arc(x, y, dotSize / 2, 0, Math.PI * 2);
-
       const isTargetDot = config.useTarget && (i === totalDays - 1);
+      let dotColor;
 
       if (isTargetDot) {
-        ctx.fillStyle = `#${config.targetcolor}`;
+        dotColor = `#${config.targetcolor}`;
       } else {
         if (i < daysPassed - 1) {
           // Passed days
-          ctx.fillStyle = `#${config.passedcolor}`;
+          dotColor = `#${config.passedcolor}`;
         } else if (i === daysPassed - 1) {
           // Current day
-          ctx.fillStyle = `#${config.currentcolor}`;
+          dotColor = `#${config.currentcolor}`;
         } else {
           // Future days
-          ctx.fillStyle = `#${config.futurecolor}`;
+          dotColor = `#${config.futurecolor}`;
         }
       }
 
       if (daysPassed > totalDays && !isTargetDot) {
-        ctx.fillStyle = `#${config.passedcolor}`;
+        dotColor = `#${config.passedcolor}`;
       }
 
-      ctx.fill();
+      // Draw Dot or Shape
+      if (isTargetDot) {
+        // Target Shape Logic
+        drawShape(ctx, x, y, dotSize * 1.2, config.targetShape, dotColor);
+      } else {
+        // Standard Circle
+        drawShape(ctx, x, y, dotSize, 'circle', dotColor);
+      }
     }
 
     // Set font for bottom text
@@ -1469,6 +1576,21 @@ export default function App() {
                             />
                             <p className="text-[10px] text-muted-foreground">Displayed at the bottom of wallpaper</p>
                           </div>
+
+                          <div className="space-y-2">
+                            <Label htmlFor="targetShape">Target Dot Shape</Label>
+                            <select
+                              id="targetShape"
+                              value={config.targetShape}
+                              onChange={(e) => handleChange('targetShape', e.target.value)}
+                              className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                            >
+                              <option value="circle">Circle (Default)</option>
+                              <option value="square">Square</option>
+                              <option value="diamond">Diamond</option>
+                              <option value="star">Star</option>
+                            </select>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1779,7 +1901,15 @@ export default function App() {
       <footer className="border-t border-border/50 py-8 mt-12 bg-background/50 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto px-6 text-center">
           <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
-            Made by <span className="text-primary underline decoration-primary font-medium">Abdullah</span>
+            Made by <a
+              className="text-primary underline decoration-primary font-medium hover:text-primary/80 transition-colors"
+              href="https://github.com/abdullahshafiq-20"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Abdullah
+            </a>
+            with
             <Heart className="w-4 h-4 text-primary fill-primary inline-block ml-1" />
           </p>
         </div>
