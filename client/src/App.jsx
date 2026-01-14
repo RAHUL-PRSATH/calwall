@@ -578,6 +578,8 @@ const TIMEZONES = [
 
 export default function App() {
   const canvasRef = useRef(null);
+  const deviceSearchRef = useRef(null);
+
 
   // Dark mode state
   const [isDarkMode, setIsDarkMode] = useState(() => {
@@ -659,11 +661,10 @@ export default function App() {
     return 'ios';
   });
 
-  // Android device search
-  const [androidSearchQuery, setAndroidSearchQuery] = useState('');
+  // Device search state
+  const [deviceSearchQuery, setDeviceSearchQuery] = useState('');
+  const [showDeviceDropdown, setShowDeviceDropdown] = useState(false);
 
-  // iOS device search
-  const [iosSearchQuery, setIosSearchQuery] = useState('');
 
   // Track carousel changes
   useEffect(() => {
@@ -713,6 +714,24 @@ export default function App() {
     localStorage.setItem('selectedPlatform', selectedPlatform);
   }, [selectedPlatform]);
 
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (deviceSearchRef.current && !deviceSearchRef.current.contains(event.target)) {
+        setShowDeviceDropdown(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('touchstart', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('touchstart', handleClickOutside);
+    };
+  }, []);
+
+
   // Handle device selection (works for both iOS and Android)
   const handleDeviceChange = (deviceIndex) => {
     setSelectedDevice(deviceIndex);
@@ -743,15 +762,14 @@ export default function App() {
     }
   };
 
-  // Filter iOS devices based on search query
-  const filteredIosDevices = IOS_DEVICES.filter(device =>
-    device.name.toLowerCase().includes(iosSearchQuery.toLowerCase())
-  );
+  // Get current device list and filter based on search
+  const currentDeviceList = selectedPlatform === 'ios' ? IOS_DEVICES : ANDROID_DEVICES;
+  const filteredDevices = deviceSearchQuery.trim()
+    ? currentDeviceList.filter(device =>
+      device.name.toLowerCase().includes(deviceSearchQuery.toLowerCase())
+    )
+    : [];
 
-  // Filter Android devices based on search query
-  const filteredAndroidDevices = ANDROID_DEVICES.filter(device =>
-    device.name.toLowerCase().includes(androidSearchQuery.toLowerCase())
-  );
 
   // Base API URL
   const API_BASE = SERVER_URL;
@@ -1167,29 +1185,29 @@ export default function App() {
     <main className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
       {/* Header */}
       <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-primary tracking-tight">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 h-12 sm:h-14 md:h-16 flex items-center justify-between">
+          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary tracking-tight">
             CalWall
           </h1>
           <Button
             onClick={toggleDarkMode}
             variant="outline"
             size="icon"
-            className="shrink-0"
+            className="shrink-0 h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10"
             aria-label="Toggle dark mode"
           >
             {isDarkMode ? (
-              <Sun className="w-5 h-5 text-primary" />
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             ) : (
-              <Moon className="w-5 h-5 text-primary" />
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
             )}
           </Button>
         </div>
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 py-3 sm:py-6 md:py-12">
+        <div className="grid lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
           {/* Left Side - Device Preview (Hidden on Mobile) */}
           <div className="hidden lg:flex flex-col items-center justify-center">
             <Card className="w-full max-w-md bg-card/50 backdrop-blur-sm border-border/50 shadow-2xl">
@@ -1277,29 +1295,55 @@ export default function App() {
                           Set Wallpaper
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-[85vw] sm:max-w-2xl md:max-w-3xl max-h-[85vh] flex flex-col p-3 sm:p-6">
-                        <DialogHeader className="shrink-0">
-                          <DialogTitle className="text-xl sm:text-2xl">Set Up Your Dynamic Wallpaper</DialogTitle>
-                          <DialogDescription className="text-sm">
+                      <DialogContent className="max-w-[90vw] sm:max-w-xl md:max-w-2xl max-h-[85vh] flex flex-col p-0 gap-0" showCloseButton={false}>
+                        <DialogHeader className="shrink-0 border-b border-border bg-muted/30 px-3 py-3 sm:px-4 sm:py-4 md:px-6 md:py-5 relative">
+                          {/* Close Button - Inside header */}
+                          <button
+                            onClick={() => setIsModalOpen(false)}
+                            className="absolute right-2 top-2 sm:right-3 sm:top-3 md:right-4 md:top-4 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full hover:bg-muted transition-colors flex items-center justify-center group"
+                            aria-label="Close"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-muted-foreground group-hover:text-foreground transition-colors sm:w-5 sm:h-5"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+
+                          <DialogTitle className="text-base sm:text-lg md:text-xl font-bold flex items-center gap-2 pr-8 sm:pr-10">
+                            <Download className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                            Set Up Your Dynamic Wallpaper
+                          </DialogTitle>
+                          <DialogDescription className="text-xs sm:text-sm mt-1">
                             Follow these steps to automatically update your {selectedPlatform === 'ios' ? 'iPhone' : 'Android'} wallpaper
                           </DialogDescription>
                         </DialogHeader>
 
-                        <div className="flex-1 overflow-y-auto px-1">
+                        <div className="flex-1 overflow-y-auto px-2 sm:px-3 md:px-4 py-2 sm:py-3 md:py-4">
                           <Carousel setApi={setCarouselApi} className="w-full">
                             <CarouselContent>
                               {/* Step 1: Configuration */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+                                  <CardHeader className="p-1.5 sm:p-2 md:p-3 pb-1 sm:pb-1.5">
+                                    <CardTitle className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm md:text-base">
+                                      <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-[10px] font-bold">1</span>
                                       Configuration
                                     </CardTitle>
-                                    <CardDescription className="text-xs">Review your settings</CardDescription>
+                                    <CardDescription className="text-[9px] sm:text-[10px]">Review your settings</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-3 p-4 pt-0">
-                                    <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-lg text-sm">
+                                  <CardContent className="space-y-1.5 sm:space-y-2 md:space-y-2.5 p-1.5 sm:p-2 md:p-3 pt-0">
+                                    <div className="grid grid-cols-2 gap-1.5 sm:gap-2 p-2 sm:p-2.5 md:p-3 bg-muted rounded-lg text-xs sm:text-sm">
                                       <div>
                                         <Label className="text-muted-foreground text-xs">Style</Label>
                                         <p className="font-semibold capitalize">{config.mode}</p>
@@ -1318,9 +1362,9 @@ export default function App() {
                                       </div>
                                     </div>
 
-                                    <div className="space-y-1">
-                                      <Label className="text-muted-foreground text-xs">Colors</Label>
-                                      <div className="flex flex-wrap gap-2 p-2 bg-muted rounded-lg">
+                                    <div className="space-y-0.5 sm:space-y-1">
+                                      <Label className="text-muted-foreground text-[9px] sm:text-xs">Colors</Label>
+                                      <div className="flex flex-wrap gap-1 sm:gap-1.5 md:gap-2 p-1.5 sm:p-2 bg-muted rounded-lg">
                                         <div className="flex items-center gap-1.5">
                                           <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.bgcolor}` }} />
                                           <span className="text-[10px]">BG</span>
@@ -1344,8 +1388,8 @@ export default function App() {
                                       </div>
                                     </div>
 
-                                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
-                                      <p className="text-xs text-foreground">
+                                    <div className="p-2 sm:p-2.5 md:p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                      <p className="text-[9px] sm:text-xs text-foreground">
                                         Updates based on your {config.mode === 'month' ? 'monthly' : 'yearly'} progress.
                                       </p>
                                     </div>
@@ -1356,23 +1400,23 @@ export default function App() {
                               {/* Step 2: Platform-Specific Automation */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
+                                  <CardHeader className="p-1.5 sm:p-2 md:p-3 pb-1 sm:pb-1.5">
+                                    <CardTitle className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm md:text-base">
+                                      <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-[10px] font-bold">2</span>
                                       {selectedPlatform === 'ios' ? 'iPhone Automation' : 'Install MacroDroid'}
                                     </CardTitle>
-                                    <CardDescription className="text-xs">
+                                    <CardDescription className="text-[9px] sm:text-[10px]">
                                       {selectedPlatform === 'ios' ? 'Set up automatic updates' : 'Download automation app'}
                                     </CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-3 p-4 pt-0">
+                                  <CardContent className="space-y-1.5 sm:space-y-2 md:space-y-2.5 p-1.5 sm:p-2 md:p-3 pt-0">
                                     {selectedPlatform === 'ios' ? (
-                                      <ol className="space-y-2">
-                                        <li className="flex gap-2">
-                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
+                                      <ol className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                                        <li className="flex gap-1.5 sm:gap-2">
+                                          <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary/20 text-primary text-[9px] sm:text-xs font-bold shrink-0">1</span>
                                           <div>
-                                            <p className="font-semibold text-sm">Open Shortcuts App</p>
-                                            <p className="text-xs text-muted-foreground">Find app on iPhone</p>
+                                            <p className="font-semibold text-[10px] sm:text-xs md:text-sm">Open Shortcuts App</p>
+                                            <p className="text-[9px] sm:text-[10px] md:text-xs text-muted-foreground">Find app on iPhone</p>
                                           </div>
                                         </li>
                                         <li className="flex gap-2">
@@ -1433,14 +1477,14 @@ export default function App() {
                               {/* Step 3: Copy URL */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+                                  <CardHeader className="p-1.5 sm:p-2 md:p-3 pb-1 sm:pb-1.5">
+                                    <CardTitle className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm md:text-base">
+                                      <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-[10px] font-bold">3</span>
                                       Copy URL
                                     </CardTitle>
-                                    <CardDescription className="text-xs">Generated from your settings</CardDescription>
+                                    <CardDescription className="text-[9px] sm:text-[10px]">Generated from your settings</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-3 p-4 pt-0">
+                                  <CardContent className="space-y-1.5 sm:space-y-2 md:space-y-2.5 p-1.5 sm:p-2 md:p-3 pt-0">
                                     <div className="space-y-2">
                                       <Label className="text-xs">Wallpaper URL</Label>
                                       <div className="flex gap-2">
@@ -1477,15 +1521,15 @@ export default function App() {
                               {selectedPlatform === 'android' && (
                                 <CarouselItem>
                                   <Card className="border-0 shadow-none">
-                                    <CardHeader className="p-4 pb-2">
-                                      <CardTitle className="flex items-center gap-2 text-lg">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
+                                    <CardHeader className="p-1.5 sm:p-2 md:p-3 pb-1 sm:pb-1.5">
+                                      <CardTitle className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm md:text-base">
+                                        <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-[10px] font-bold">4</span>
                                         Setup Macro
                                       </CardTitle>
-                                      <CardDescription className="text-xs">Configure MacroDroid automation</CardDescription>
+                                      <CardDescription className="text-[9px] sm:text-[10px]">Configure MacroDroid automation</CardDescription>
                                     </CardHeader>
-                                    <CardContent className="space-y-3 p-4 pt-0">
-                                      <ol className="space-y-2">
+                                    <CardContent className="space-y-1.5 sm:space-y-2 md:space-y-2.5 p-1.5 sm:p-2 md:p-3 pt-0">
+                                      <ol className="space-y-1 sm:space-y-1.5 md:space-y-2">
                                         <li className="flex gap-2">
                                           <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
                                           <div>
@@ -1537,21 +1581,21 @@ export default function App() {
                               {/* Step 4/5: Configure Shortcut/Wallpaper */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="flex items-center gap-2 text-lg">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                                  <CardHeader className="p-1.5 sm:p-2 md:p-3 pb-1 sm:pb-1.5">
+                                    <CardTitle className="flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm md:text-base">
+                                      <span className="flex items-center justify-center w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-primary text-primary-foreground text-[9px] sm:text-[10px] font-bold">
                                         {selectedPlatform === 'ios' ? '4' : '5'}
                                       </span>
                                       {selectedPlatform === 'ios' ? 'Configure Shortcut' : 'Set Wallpaper'}
                                     </CardTitle>
-                                    <CardDescription className="text-xs">
+                                    <CardDescription className="text-[9px] sm:text-[10px]">
                                       {selectedPlatform === 'ios' ? 'Add actions to download wallpaper' : 'Apply the downloaded wallpaper'}
                                     </CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-3 p-4 pt-0">
+                                  <CardContent className="space-y-1.5 sm:space-y-2 md:space-y-2.5 p-1.5 sm:p-2 md:p-3 pt-0">
                                     {selectedPlatform === 'ios' ? (
                                       <>
-                                        <ol className="space-y-2">
+                                        <ol className="space-y-1 sm:space-y-1.5 md:space-y-2">
                                           <li className="flex gap-2">
                                             <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
                                             <div>
@@ -1633,27 +1677,28 @@ export default function App() {
                               </CarouselItem>
                             </CarouselContent>
 
-                            <div className="flex items-center justify-between mt-6 shrink-0">
-                              <CarouselPrevious className="static translate-y-0" />
-                              <div className="flex gap-2">
+                            {/* Carousel Navigation - Dots and Buttons */}
+                            <div className="flex items-center justify-between mt-2 sm:mt-3 md:mt-4 pt-2 sm:pt-3 md:pt-4 border-t border-border shrink-0 px-2 sm:px-3 md:px-4 pb-2 sm:pb-3 md:pb-4">
+                              <CarouselPrevious className="static translate-y-0 h-8 w-8 sm:h-9 sm:w-9" />
+                              <div className="flex gap-1.5 sm:gap-2">
                                 {Array.from({ length: selectedPlatform === 'ios' ? 4 : 5 }, (_, index) => (
                                   <button
                                     key={index}
                                     onClick={() => carouselApi?.scrollTo(index)}
-                                    className={`w-2 h-2 rounded-full transition-colors ${currentStep === index
-                                      ? 'bg-primary'
-                                      : 'bg-muted-foreground/30'
+                                    className={`w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full transition-all ${currentStep === index
+                                      ? 'bg-primary scale-110'
+                                      : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'
                                       }`}
                                     aria-label={`Go to step ${index + 1}`}
                                   />
                                 ))}
                               </div>
                               {(selectedPlatform === 'ios' && currentStep === 3) || (selectedPlatform === 'android' && currentStep === 4) ? (
-                                <Button size="sm" onClick={() => setIsModalOpen(false)}>
+                                <Button size="sm" onClick={() => setIsModalOpen(false)} className="h-8 sm:h-9 text-xs sm:text-sm">
                                   Finish
                                 </Button>
                               ) : (
-                                <CarouselNext className="static translate-y-0" />
+                                <CarouselNext className="static translate-y-0 h-8 w-8 sm:h-9 sm:w-9" />
                               )}
                             </div>
                           </Carousel>
@@ -1669,27 +1714,27 @@ export default function App() {
           {/* Right Side - Customization Options */}
           <div>
             <Card className="bg-card/50 backdrop-blur-sm border-border/50 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl">Customize</CardTitle>
-                <CardDescription>Adjust settings to create your perfect wallpaper</CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl md:text-2xl">Customize</CardTitle>
+                <CardDescription className="text-xs sm:text-sm">Adjust settings to create your perfect wallpaper</CardDescription>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-3 sm:p-4 md:p-6">
                 <Tabs defaultValue="basic" className="w-full">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="basic" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Basic</TabsTrigger>
-                    <TabsTrigger value="colors" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Colors</TabsTrigger>
-                    <TabsTrigger value="advanced" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Advanced</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3 h-8 sm:h-9 md:h-10">
+                    <TabsTrigger value="basic" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground text-xs sm:text-sm">Basic</TabsTrigger>
+                    <TabsTrigger value="colors" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground text-xs sm:text-sm">Colors</TabsTrigger>
+                    <TabsTrigger value="advanced" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground text-xs sm:text-sm">Advanced</TabsTrigger>
                   </TabsList>
 
                   {/* Basic Settings */}
-                  <TabsContent value="basic" className="space-y-6 mt-6">
+                  <TabsContent value="basic" className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
                     {/* Theme Selector */}
-                    <div className="space-y-2 pb-4 border-b border-border">
-                      <Label htmlFor="theme">Quick Theme Presets</Label>
+                    <div className="space-y-1.5 sm:space-y-2 pb-3 sm:pb-4 border-b border-border">
+                      <Label htmlFor="theme" className="text-xs sm:text-sm">Quick Theme Presets</Label>
                       <select
                         id="theme"
                         onChange={(e) => applyTheme(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-background border border-input rounded-md text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                         value={selectedTheme}
                       >
                         <option value="">Select a theme...</option>
@@ -1699,27 +1744,27 @@ export default function App() {
                           </option>
                         ))}
                       </select>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-[10px] sm:text-xs text-muted-foreground">
                         Choose a preset theme or customize colors manually below
                       </p>
                     </div>
 
                     {/* Device Selector */}
-                    <div className="space-y-3 pb-4 border-b border-border">
-                      <Label>Device Presets</Label>
+                    <div className="space-y-2 sm:space-y-3 pb-3 sm:pb-4 border-b border-border">
+                      <Label className="text-xs sm:text-sm">Device Presets</Label>
 
                       {/* Platform Tabs */}
-                      <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                      <div className="flex gap-1.5 sm:gap-2 p-0.5 sm:p-1 bg-muted rounded-lg">
                         <button
                           onClick={() => {
                             setSelectedPlatform('ios');
                             setSelectedDevice('');
-                            setAndroidSearchQuery('');
-                            setIosSearchQuery('');
+                            setDeviceSearchQuery('');
+                            setShowDeviceDropdown(false);
                           }}
-                          className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${selectedPlatform === 'ios'
-                              ? 'bg-primary text-primary-foreground shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
+                          className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${selectedPlatform === 'ios'
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                           iOS
@@ -1728,173 +1773,183 @@ export default function App() {
                           onClick={() => {
                             setSelectedPlatform('android');
                             setSelectedDevice('');
-                            setAndroidSearchQuery('');
-                            setIosSearchQuery('');
+                            setDeviceSearchQuery('');
+                            setShowDeviceDropdown(false);
                           }}
-                          className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${selectedPlatform === 'android'
-                              ? 'bg-primary text-primary-foreground shadow-sm'
-                              : 'text-muted-foreground hover:text-foreground'
+                          className={`flex-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium transition-all ${selectedPlatform === 'android'
+                            ? 'bg-primary text-primary-foreground shadow-sm'
+                            : 'text-muted-foreground hover:text-foreground'
                             }`}
                         >
                           Android
                         </button>
                       </div>
 
-                      {/* Searchable Device Input with Clear Button */}
-                      <div className="relative">
-                        <Input
-                          type="text"
-                          placeholder={`Search ${selectedPlatform === 'ios' ? 'iPhone' : 'Android'} devices...`}
-                          value={selectedPlatform === 'ios' ? iosSearchQuery : androidSearchQuery}
-                          onChange={(e) => {
-                            const value = e.target.value;
-                            if (selectedPlatform === 'ios') {
-                              setIosSearchQuery(value);
-                              // Auto-select if exact match
-                              const matchedDevice = IOS_DEVICES.find(d => d.name.toLowerCase() === value.toLowerCase());
-                              if (matchedDevice) {
-                                const index = IOS_DEVICES.indexOf(matchedDevice);
-                                handleDeviceChange(index.toString());
-                              }
-                            } else {
-                              setAndroidSearchQuery(value);
-                              // Auto-select if exact match
-                              const matchedDevice = ANDROID_DEVICES.find(d => d.name.toLowerCase() === value.toLowerCase());
-                              if (matchedDevice) {
-                                const index = ANDROID_DEVICES.indexOf(matchedDevice);
-                                handleDeviceChange(index.toString());
-                              }
-                            }
-                          }}
-                          className="bg-background/50 text-sm pr-10"
-                          list={`${selectedPlatform}-devices-list`}
-                        />
-
-                        {/* Clear Button */}
-                        {((selectedPlatform === 'ios' && iosSearchQuery) || (selectedPlatform === 'android' && androidSearchQuery)) && (
-                          <button
-                            onClick={() => {
-                              if (selectedPlatform === 'ios') {
-                                setIosSearchQuery('');
-                              } else {
-                                setAndroidSearchQuery('');
-                              }
-                              setSelectedDevice('');
+                      {/* Searchable Device Input (Mobile-Friendly) */}
+                      <div ref={deviceSearchRef} className="relative space-y-2">
+                        <div className="relative">
+                          <Input
+                            type="text"
+                            placeholder={`Search ${selectedPlatform === 'ios' ? 'iPhone' : 'Android'} devices...`}
+                            value={deviceSearchQuery}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setDeviceSearchQuery(value);
+                              setShowDeviceDropdown(value.trim().length > 0);
                             }}
-                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
-                            aria-label="Clear selection"
-                          >
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                              <line x1="18" y1="6" x2="6" y2="18"></line>
-                              <line x1="6" y1="6" x2="18" y2="18"></line>
-                            </svg>
-                          </button>
-                        )}
+                            onFocus={() => {
+                              if (deviceSearchQuery.trim().length > 0) {
+                                setShowDeviceDropdown(true);
+                              }
+                            }}
+                            className="bg-background/50 text-xs sm:text-sm pr-8 sm:pr-10 h-8 sm:h-9 md:h-10"
+                          />
 
-                        <datalist id={`${selectedPlatform}-devices-list`}>
-                          {selectedPlatform === 'ios' ? (
-                            filteredIosDevices.map((device, index) => (
-                              <option key={index} value={device.name} />
-                            ))
-                          ) : (
-                            filteredAndroidDevices.map((device, index) => (
-                              <option key={index} value={device.name} />
-                            ))
+                          {/* Clear Button */}
+                          {deviceSearchQuery && (
+                            <button
+                              onClick={() => {
+                                setDeviceSearchQuery('');
+                                setShowDeviceDropdown(false);
+                                setSelectedDevice('');
+                              }}
+                              className="absolute right-1.5 sm:right-2 top-1/2 -translate-y-1/2 p-0.5 sm:p-1 hover:bg-muted rounded-full transition-colors"
+                              aria-label="Clear search"
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="sm:w-4 sm:h-4">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                              </svg>
+                            </button>
                           )}
-                        </datalist>
-                      </div>
 
-                      {/* Help Text */}
-                      <p className="text-xs text-muted-foreground">
-                        {selectedPlatform === 'ios'
-                          ? 'Search and select your iPhone model, or use custom dimensions below'
-                          : 'Search and select your Android device, or use custom dimensions below'
-                        }
-                      </p>
+                          {/* Custom Dropdown - Only shows when typing */}
+                          {showDeviceDropdown && filteredDevices.length > 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-background border border-input rounded-md shadow-lg max-h-60 overflow-auto">
+                              {filteredDevices.map((device, index) => {
+                                const deviceIndex = currentDeviceList.indexOf(device);
+                                return (
+                                  <button
+                                    key={index}
+                                    onClick={() => {
+                                      handleDeviceChange(deviceIndex.toString());
+                                      setDeviceSearchQuery(device.name);
+                                      setShowDeviceDropdown(false);
+                                    }}
+                                    className="w-full text-left px-3 py-2 text-xs sm:text-sm hover:bg-muted transition-colors border-b border-border last:border-b-0"
+                                  >
+                                    <div className="font-medium">{device.name}</div>
+                                    <div className="text-[10px] sm:text-xs text-muted-foreground">
+                                      {device.width} × {device.height}
+                                    </div>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {/* No results message */}
+                          {showDeviceDropdown && deviceSearchQuery.trim() && filteredDevices.length === 0 && (
+                            <div className="absolute z-50 w-full mt-1 bg-background border border-input rounded-md shadow-lg p-3">
+                              <p className="text-xs sm:text-sm text-muted-foreground text-center">
+                                No devices found matching "{deviceSearchQuery}"
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Help Text */}
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">
+                          {selectedPlatform === 'ios'
+                            ? 'Type to search for your iPhone model, or use custom dimensions below'
+                            : 'Type to search for your Android device, or use custom dimensions below'
+                          }
+                        </p>
+                      </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="width">Width (px)</Label>
+                    <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                      <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                        <Label htmlFor="width" className="text-xs sm:text-sm">Width (px)</Label>
                         <Input
                           id="width"
                           type="number"
                           value={config.width}
                           onChange={(e) => handleChange('width', parseInt(e.target.value) || 1080)}
-                          className="bg-background/50"
+                          className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           disabled={selectedDevice !== ''}
                         />
                       </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="height">Height (px)</Label>
+                      <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                        <Label htmlFor="height" className="text-xs sm:text-sm">Height (px)</Label>
                         <Input
                           id="height"
                           type="number"
                           value={config.height}
                           onChange={(e) => handleChange('height', parseInt(e.target.value) || 2400)}
-                          className="bg-background/50"
+                          className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           disabled={selectedDevice !== ''}
                         />
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="mode">Mode</Label>
+                    <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                      <Label htmlFor="mode" className="text-xs sm:text-sm">Mode</Label>
                       <select
                         id="mode"
                         value={config.mode}
                         onChange={(e) => handleChange('mode', e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-background border border-input rounded-md text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                       >
                         <option value="month">Month</option>
                         <option value="year">Year</option>
                       </select>
                     </div>
 
-                    <div className="space-y-4 pt-4 border-t border-border">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-2 sm:space-y-3 md:space-y-4 pt-3 sm:pt-4 border-t border-border">
+                      <div className="flex items-center gap-1.5 sm:gap-2">
                         <input
                           type="checkbox"
                           id="useTarget"
                           checked={config.useTarget}
                           onChange={(e) => handleChange('useTarget', e.target.checked)}
-                          className="w-4 h-4 rounded border-primary text-primary focus:ring-primary"
+                          className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded border-primary text-primary focus:ring-primary"
                         />
-                        <Label htmlFor="useTarget" className="font-semibold cursor-pointer select-none">Target Goal Mode</Label>
+                        <Label htmlFor="useTarget" className="font-semibold cursor-pointer select-none text-xs sm:text-sm">Target Goal Mode</Label>
                       </div>
 
                       {config.useTarget && (
-                        <div className="space-y-4 pl-4 border-l-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
-                          <div className="space-y-2">
-                            <Label htmlFor="targetDate">Target Date</Label>
+                        <div className="space-y-2 sm:space-y-3 md:space-y-4 pl-3 sm:pl-4 border-l-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                            <Label htmlFor="targetDate" className="text-xs sm:text-sm">Target Date</Label>
                             <Input
                               id="targetDate"
                               type="date"
                               value={config.targetDate}
                               onChange={(e) => handleChange('targetDate', e.target.value)}
-                              className="bg-background/50"
+                              className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                             />
                           </div>
-                          <div className="space-y-2">
-                            <Label htmlFor="targetTitle">Goal Title</Label>
+                          <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                            <Label htmlFor="targetTitle" className="text-xs sm:text-sm">Goal Title</Label>
                             <Input
                               id="targetTitle"
                               type="text"
                               placeholder="e.g. Marathon Day"
                               value={config.targetTitle}
                               onChange={(e) => handleChange('targetTitle', e.target.value)}
-                              className="bg-background/50"
+                              className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                             />
-                            <p className="text-[10px] text-muted-foreground">Displayed at the bottom of wallpaper</p>
+                            <p className="text-[9px] sm:text-[10px] text-muted-foreground">Displayed at the bottom of wallpaper</p>
                           </div>
 
-                          <div className="space-y-2">
-                            <Label htmlFor="targetShape">Target Dot Shape</Label>
+                          <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                            <Label htmlFor="targetShape" className="text-xs sm:text-sm">Target Dot Shape</Label>
                             <select
                               id="targetShape"
                               value={config.targetShape}
                               onChange={(e) => handleChange('targetShape', e.target.value)}
-                              className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                              className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-background border border-input rounded-md text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                             >
                               <option value="circle">Circle (Default)</option>
                               <option value="square">Square</option>
@@ -1906,13 +1961,13 @@ export default function App() {
                       )}
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="timezone">Timezone</Label>
+                    <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                      <Label htmlFor="timezone" className="text-xs sm:text-sm">Timezone</Label>
                       <select
                         id="timezone"
                         value={config.timezone}
                         onChange={(e) => handleChange('timezone', parseFloat(e.target.value))}
-                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
+                        className="w-full px-2 sm:px-3 py-1.5 sm:py-2 bg-background border border-input rounded-md text-xs sm:text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
                       >
                         {TIMEZONES.map((tz, index) => (
                           <option key={index} value={tz.offset}>
@@ -1922,22 +1977,22 @@ export default function App() {
                       </select>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="cols">Columns</Label>
+                    <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                      <Label htmlFor="cols" className="text-xs sm:text-sm">Columns</Label>
                       <Input
                         id="cols"
                         type="number"
                         value={config.cols}
                         onChange={(e) => handleChange('cols', parseInt(e.target.value) || 15)}
-                        className="bg-background/50"
+                        className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                         min="1"
                         max="30"
                       />
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="dotradius">Dot Size</Label>
-                      <div className="flex items-center gap-4">
+                    <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                      <Label htmlFor="dotradius" className="text-xs sm:text-sm">Dot Size</Label>
+                      <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
                         <Input
                           id="dotradius"
                           type="range"
@@ -1948,28 +2003,28 @@ export default function App() {
                           max="2.0"
                           step="0.1"
                         />
-                        <span className="text-sm text-muted-foreground min-w-12">{config.dotradius}x</span>
+                        <span className="text-xs sm:text-sm text-muted-foreground min-w-8 sm:min-w-10 md:min-w-12">{config.dotradius}x</span>
                       </div>
                     </div>
                   </TabsContent>
 
                   {/* Color Settings */}
-                  <TabsContent value="colors" className="space-y-6 mt-6">
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="bgcolor">Background Color</Label>
-                        <div className="flex gap-2">
+                  <TabsContent value="colors" className="space-y-2 sm:space-y-3 md:space-y-4 mt-3 sm:mt-4 md:mt-6">
+                    <div className="space-y-2 sm:space-y-2.5 md:space-y-3">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <Label htmlFor="bgcolor" className="text-xs sm:text-sm">Background Color</Label>
+                        <div className="flex gap-1.5 sm:gap-2">
                           <div className="relative flex-1">
                             <Input
                               id="bgcolor"
                               type="text"
                               value={config.bgcolor}
                               onChange={(e) => handleChange('bgcolor', e.target.value.replace('#', ''))}
-                              className="bg-background/50 pl-12"
+                              className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                               placeholder="71717a"
                             />
                             <div
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                              className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                               style={{ backgroundColor: `#${config.bgcolor}` }}
                             />
                           </div>
@@ -1977,25 +2032,25 @@ export default function App() {
                             type="color"
                             value={`#${config.bgcolor}`}
                             onChange={(e) => handleChange('bgcolor', e.target.value.replace('#', ''))}
-                            className="w-12 h-10 rounded border border-input cursor-pointer"
+                            className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="passedcolor">Passed Days Color</Label>
-                        <div className="flex gap-2">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <Label htmlFor="passedcolor" className="text-xs sm:text-sm">Passed Days Color</Label>
+                        <div className="flex gap-1.5 sm:gap-2">
                           <div className="relative flex-1">
                             <Input
                               id="passedcolor"
                               type="text"
                               value={config.passedcolor}
                               onChange={(e) => handleChange('passedcolor', e.target.value.replace('#', ''))}
-                              className="bg-background/50 pl-12"
+                              className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                               placeholder="f97316"
                             />
                             <div
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                              className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                               style={{ backgroundColor: `#${config.passedcolor}` }}
                             />
                           </div>
@@ -2003,25 +2058,25 @@ export default function App() {
                             type="color"
                             value={`#${config.passedcolor}`}
                             onChange={(e) => handleChange('passedcolor', e.target.value.replace('#', ''))}
-                            className="w-12 h-10 rounded border border-input cursor-pointer"
+                            className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="currentcolor">Current Day Color</Label>
-                        <div className="flex gap-2">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <Label htmlFor="currentcolor" className="text-xs sm:text-sm">Current Day Color</Label>
+                        <div className="flex gap-1.5 sm:gap-2">
                           <div className="relative flex-1">
                             <Input
                               id="currentcolor"
                               type="text"
                               value={config.currentcolor}
                               onChange={(e) => handleChange('currentcolor', e.target.value.replace('#', ''))}
-                              className="bg-background/50 pl-12"
+                              className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                               placeholder="fbbf24"
                             />
                             <div
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                              className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                               style={{ backgroundColor: `#${config.currentcolor}` }}
                             />
                           </div>
@@ -2029,25 +2084,25 @@ export default function App() {
                             type="color"
                             value={`#${config.currentcolor}`}
                             onChange={(e) => handleChange('currentcolor', e.target.value.replace('#', ''))}
-                            className="w-12 h-10 rounded border border-input cursor-pointer"
+                            className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                           />
                         </div>
                       </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="futurecolor">Future Days Color</Label>
-                        <div className="flex gap-2">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <Label htmlFor="futurecolor" className="text-xs sm:text-sm">Future Days Color</Label>
+                        <div className="flex gap-1.5 sm:gap-2">
                           <div className="relative flex-1">
                             <Input
                               id="futurecolor"
                               type="text"
                               value={config.futurecolor}
                               onChange={(e) => handleChange('futurecolor', e.target.value.replace('#', ''))}
-                              className="bg-background/50 pl-12"
+                              className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                               placeholder="52525b"
                             />
                             <div
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                              className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                               style={{ backgroundColor: `#${config.futurecolor}` }}
                             />
                           </div>
@@ -2055,26 +2110,26 @@ export default function App() {
                             type="color"
                             value={`#${config.futurecolor}`}
                             onChange={(e) => handleChange('futurecolor', e.target.value.replace('#', ''))}
-                            className="w-12 h-10 rounded border border-input cursor-pointer"
+                            className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                           />
                         </div>
                       </div>
 
                       {config.useTarget && (
-                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                          <Label htmlFor="targetcolor">Target Date Color</Label>
-                          <div className="flex gap-2">
+                        <div className="space-y-1 sm:space-y-1.5 animate-in fade-in slide-in-from-top-2">
+                          <Label htmlFor="targetcolor" className="text-xs sm:text-sm">Target Date Color</Label>
+                          <div className="flex gap-1.5 sm:gap-2">
                             <div className="relative flex-1">
                               <Input
                                 id="targetcolor"
                                 type="text"
                                 value={config.targetcolor}
                                 onChange={(e) => handleChange('targetcolor', e.target.value.replace('#', ''))}
-                                className="bg-background/50 pl-12"
+                                className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                                 placeholder="ef4444"
                               />
                               <div
-                                className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                                className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                                 style={{ backgroundColor: `#${config.targetcolor}` }}
                               />
                             </div>
@@ -2082,26 +2137,26 @@ export default function App() {
                               type="color"
                               value={`#${config.targetcolor}`}
                               onChange={(e) => handleChange('targetcolor', e.target.value.replace('#', ''))}
-                              className="w-12 h-10 rounded border border-input cursor-pointer"
+                              className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                             />
                           </div>
                         </div>
                       )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="textcolor">Text Color</Label>
-                        <div className="flex gap-2">
+                      <div className="space-y-1 sm:space-y-1.5">
+                        <Label htmlFor="textcolor" className="text-xs sm:text-sm">Text Color</Label>
+                        <div className="flex gap-1.5 sm:gap-2">
                           <div className="relative flex-1">
                             <Input
                               id="textcolor"
                               type="text"
                               value={config.textcolor}
                               onChange={(e) => handleChange('textcolor', e.target.value.replace('#', ''))}
-                              className="bg-background/50 pl-12"
+                              className="bg-background/50 pl-8 sm:pl-10 md:pl-12 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                               placeholder="ffffff"
                             />
                             <div
-                              className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                              className="absolute left-2 sm:left-2.5 md:left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 rounded border border-border"
                               style={{ backgroundColor: `#${config.textcolor}` }}
                             />
                           </div>
@@ -2109,7 +2164,7 @@ export default function App() {
                             type="color"
                             value={`#${config.textcolor}`}
                             onChange={(e) => handleChange('textcolor', e.target.value.replace('#', ''))}
-                            className="w-12 h-10 rounded border border-input cursor-pointer"
+                            className="w-8 h-8 sm:w-10 sm:h-9 md:w-12 md:h-10 rounded border border-input cursor-pointer"
                           />
                         </div>
                       </div>
@@ -2117,56 +2172,56 @@ export default function App() {
                   </TabsContent>
 
                   {/* Advanced Settings */}
-                  <TabsContent value="advanced" className="space-y-6 mt-6">
-                    <div className="space-y-4">
-                      <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                  <TabsContent value="advanced" className="space-y-3 sm:space-y-4 md:space-y-6 mt-3 sm:mt-4 md:mt-6">
+                    <div className="space-y-2 sm:space-y-3 md:space-y-4">
+                      <h3 className="text-xs sm:text-sm font-semibold text-muted-foreground uppercase tracking-wider">
                         Padding (pixels)
                       </h3>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="paddingtop">Top</Label>
+                      <div className="grid grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+                        <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                          <Label htmlFor="paddingtop" className="text-xs sm:text-sm">Top</Label>
                           <Input
                             id="paddingtop"
                             type="number"
                             value={config.paddingtop}
                             onChange={(e) => handleChange('paddingtop', parseInt(e.target.value) || 0)}
-                            className="bg-background/50"
+                            className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="paddingbottom">Bottom</Label>
+                        <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                          <Label htmlFor="paddingbottom" className="text-xs sm:text-sm">Bottom</Label>
                           <Input
                             id="paddingbottom"
                             type="number"
                             value={config.paddingbottom}
                             onChange={(e) => handleChange('paddingbottom', parseInt(e.target.value) || 0)}
-                            className="bg-background/50"
+                            className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="paddingleft">Left</Label>
+                        <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                          <Label htmlFor="paddingleft" className="text-xs sm:text-sm">Left</Label>
                           <Input
                             id="paddingleft"
                             type="number"
                             value={config.paddingleft}
                             onChange={(e) => handleChange('paddingleft', parseInt(e.target.value) || 0)}
-                            className="bg-background/50"
+                            className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <Label htmlFor="paddingright">Right</Label>
+                        <div className="space-y-1 sm:space-y-1.5 md:space-y-2">
+                          <Label htmlFor="paddingright" className="text-xs sm:text-sm">Right</Label>
                           <Input
                             id="paddingright"
                             type="number"
                             value={config.paddingright}
                             onChange={(e) => handleChange('paddingright', parseInt(e.target.value) || 0)}
-                            className="bg-background/50"
+                            className="bg-background/50 text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                           />
                         </div>
                       </div>
                     </div>
 
-                    <div className="pt-4 border-t border-border">
+                    <div className="pt-3 sm:pt-4 border-t border-border">
                       <Button
                         onClick={() => setConfig({
                           width: 1080,
@@ -2186,7 +2241,7 @@ export default function App() {
                           dotradius: 1.0
                         })}
                         variant="outline"
-                        className="w-full"
+                        className="w-full text-xs sm:text-sm h-8 sm:h-9 md:h-10"
                       >
                         Reset to Defaults
                       </Button>
@@ -2197,11 +2252,11 @@ export default function App() {
             </Card>
 
             <Button
-              className="w-full mt-6 lg:hidden shadow-lg shadow-primary/20"
+              className="w-full mt-4 sm:mt-6 lg:hidden shadow-lg shadow-primary/20 text-xs sm:text-sm h-9 sm:h-10 md:h-11"
               size="lg"
               onClick={() => setIsModalOpen(true)}
             >
-              <Download className="w-4 h-4 mr-2" />
+              <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4 mr-1.5 sm:mr-2" />
               Set Wallpaper
             </Button>
           </div>
@@ -2209,9 +2264,9 @@ export default function App() {
       </div>
 
       {/* Footer */}
-      <footer className="border-t border-border/50 py-8 mt-12 bg-background/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 text-center">
-          <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+      <footer className="border-t border-border/50 py-4 sm:py-6 md:py-8 mt-6 sm:mt-8 md:mt-12 bg-background/50 backdrop-blur-sm">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 md:px-6 text-center">
+          <p className="text-xs sm:text-sm text-muted-foreground flex items-center justify-center gap-0.5 sm:gap-1">
             Made by <a
               className="text-primary underline decoration-primary font-medium hover:text-primary/80 transition-colors"
               href="https://github.com/abdullahshafiq-20"
@@ -2220,8 +2275,8 @@ export default function App() {
             >
               Abdullah
             </a>
-            with
-            <Heart className="w-4 h-4 text-primary fill-primary inline-block ml-1" />
+            <span> with  </span>
+            <Heart className="w-3 h-3 sm:w-4 sm:h-4 text-primary fill-primary inline-block ml-0.5 sm:ml-1" />
           </p>
         </div>
       </footer>
