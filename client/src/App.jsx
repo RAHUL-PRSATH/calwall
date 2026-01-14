@@ -6,6 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Copy, Check, Download, RefreshCw } from "lucide-react";
 
+const SERVER_URL = process.env.REACT_APP_SERVER_URL || 'http://localhost:3000';
+
 export default function App() {
   const canvasRef = useRef(null);
 
@@ -32,7 +34,7 @@ export default function App() {
   const [copied, setCopied] = useState(false);
 
   // Base API URL
-  const API_BASE = 'http://localhost:3000';
+  const API_BASE = SERVER_URL;
 
   // Generate wallpaper URL (only for copying/downloading)
   const generateApiUrl = () => {
