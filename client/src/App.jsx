@@ -533,7 +533,12 @@ export default function App() {
     futurecolor: '52525b',
     textcolor: 'ffffff',
     cols: 15,
-    dotradius: 1.0
+    cols: 15,
+    dotradius: 1.0,
+    useTarget: false,
+    targetDate: '',
+    targetTitle: '',
+    targetcolor: 'ef4444'
   });
 
   const [wallpaperUrl, setWallpaperUrl] = useState('');
@@ -542,6 +547,7 @@ export default function App() {
   const [carouselApi, setCarouselApi] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('');
+  const [selectedTheme, setSelectedTheme] = useState('');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState('');
 
@@ -582,12 +588,24 @@ export default function App() {
     if (deviceIndex === '') return;
     const device = IOS_DEVICES[parseInt(deviceIndex)];
     if (device) {
+      // Calculate responsive padding using iPhone 11 as reference (Height: 1792, Top: 450, Bottom: 100)
+      const refHeight = 1792;
+      const refTop = 450;
+      const refBottom = 100;
+
+      const paddingTop = Math.round((device.height / refHeight) * refTop);
+      const paddingBottom = Math.round((device.height / refHeight) * refBottom);
+
       setConfig(prev => ({
         ...prev,
         width: device.width,
-        height: device.height
+        height: device.height,
+        // If in month mode, preserve the user's manual padding or existing padding
+        // Otherwise (Year mode), apply the preset's padding to clear the clock (approx 450px)
+        paddingtop: prev.mode === 'month' ? prev.paddingtop : paddingTop,
+        paddingbottom: paddingBottom
       }));
-      toast.success(`Applied ${device.name} dimensions (${device.width}×${device.height})`);
+      toast.success(`Applied ${device.name} preset`);
     }
   };
 
@@ -602,7 +620,8 @@ export default function App() {
         params.append(key, value);
       }
     });
-    return `${API_BASE}/api/wallpaper/getCalWall?${params.toString()}`;
+    const endpoint = config.useTarget ? 'getTargetCalWall' : 'getCalWall';
+    return `${API_BASE}/api/wallpaper/${endpoint}?${params.toString()}`;
   };
 
   // Update URL when config changes
@@ -631,7 +650,30 @@ export default function App() {
 
     let totalDays, daysPassed, title;
 
-    if (config.mode === 'month') {
+    if (config.useTarget && config.targetDate) {
+      let startDate;
+      if (config.mode === 'month') {
+        startDate = new Date(localTime.getFullYear(), localTime.getMonth(), 1);
+      } else {
+        startDate = new Date(localTime.getFullYear(), 0, 1);
+      }
+
+      const targetDate = new Date(config.targetDate);
+      if (!isNaN(targetDate.getTime())) {
+        const diffTime = targetDate - startDate;
+        totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        const diffPassed = localTime - startDate;
+        daysPassed = Math.floor(diffPassed / (1000 * 60 * 60 * 24)) + 1;
+
+        if (daysPassed < 1) daysPassed = 1;
+        title = config.targetTitle || 'Target Goal';
+      } else {
+        totalDays = 30; // Fallback
+        daysPassed = 1;
+        title = 'Invalid Date';
+      }
+    } else if (config.mode === 'month') {
       const nextMonth = new Date(localTime.getFullYear(), localTime.getMonth() + 1, 1);
       const thisMonth = new Date(localTime.getFullYear(), localTime.getMonth(), 1);
       totalDays = Math.floor((nextMonth - thisMonth) / (1000 * 60 * 60 * 24));
@@ -695,21 +737,29 @@ export default function App() {
       ctx.beginPath();
       ctx.arc(x, y, dotSize / 2, 0, Math.PI * 2);
 
-      if (i < daysPassed - 1) {
-        // Passed days
-        ctx.fillStyle = `#${config.passedcolor}`;
-      } else if (i === daysPassed - 1) {
-        // Current day
-        ctx.fillStyle = `#${config.currentcolor}`;
+      const isTargetDot = config.useTarget && (i === totalDays - 1);
+
+      if (isTargetDot) {
+        ctx.fillStyle = `#${config.targetcolor}`;
       } else {
-        // Future days
-        ctx.fillStyle = `#${config.futurecolor}`;
+        if (i < daysPassed - 1) {
+          // Passed days
+          ctx.fillStyle = `#${config.passedcolor}`;
+        } else if (i === daysPassed - 1) {
+          // Current day
+          ctx.fillStyle = `#${config.currentcolor}`;
+        } else {
+          // Future days
+          ctx.fillStyle = `#${config.futurecolor}`;
+        }
       }
+
+      if (daysPassed > totalDays && !isTargetDot) {
+        ctx.fillStyle = `#${config.passedcolor}`;
+      }
+
       ctx.fill();
     }
-
-    // Bottom text - Auto-positioned below grid with safe spacing
-    const bottomY = startY + gridHeight + Math.floor(textReservedSpace / 2);
 
     // Set font for bottom text
     ctx.fillStyle = `#${config.textcolor}`;
@@ -718,9 +768,19 @@ export default function App() {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    // Draw combined text: "Xd left • Y%"
-    const bottomText = `${daysLeft}d left • ${percentComplete}%`;
-    ctx.fillText(bottomText, config.width / 2, bottomY);
+    // 1. Draw "Days Left • %" immediately below grid (standard position)
+    // Always show this info, even in Target Mode
+    const bottomY = startY + gridHeight + Math.floor(textReservedSpace / 2);
+    const infoText = `${daysLeft}d left • ${percentComplete}%`;
+    ctx.fillText(infoText, config.width / 2, bottomY);
+
+    // 2. Draw Target Title if in Target Mode
+    if (config.useTarget && config.targetTitle) {
+      const safeBottomY = config.height - config.paddingbottom - (fontSize * 1.5);
+      const titleY = Math.max(safeBottomY, bottomY + fontSize * 2);
+      ctx.font = `${Math.floor(fontSize * 1.2)}px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif`;
+      ctx.fillText(config.targetTitle, config.width / 2, titleY);
+    }
 
     setPreviewSrc(canvas.toDataURL());
 
@@ -798,11 +858,29 @@ export default function App() {
       case 'currentcolor':
       case 'futurecolor':
       case 'textcolor':
+      case 'targetcolor':
         // Validate hex color (without #)
         const hexPattern = /^[0-9A-Fa-f]{6}$/;
         if (!hexPattern.test(value)) {
           toast.error('Color must be a valid 6-digit hex code (e.g., ff0000)');
           return;
+        }
+        break;
+
+      case 'mode':
+        // If switching mode while a device is selected, adjust padding
+        if (selectedDevice !== '') {
+          const device = IOS_DEVICES[parseInt(selectedDevice)];
+          if (device) {
+            const refHeight = 1792;
+            // If switching to Month, use smaller top padding (e.g. 150)
+            // If switching to Year, restore larger top padding (e.g. 450)
+            const refTop = value === 'month' ? 150 : 450;
+            const newPaddingTop = Math.round((device.height / refHeight) * refTop);
+
+            setConfig(prev => ({ ...prev, [key]: value, paddingtop: newPaddingTop }));
+            return;
+          }
         }
         break;
     }
@@ -812,6 +890,7 @@ export default function App() {
 
   // Handle theme selection
   const applyTheme = (themeIndex) => {
+    setSelectedTheme(themeIndex);
     if (themeIndex === '') return; // "Select a theme" option
     const theme = THEMES[parseInt(themeIndex)];
     if (theme) {
@@ -950,9 +1029,9 @@ export default function App() {
                         </div>
 
                         {/* Clock & Date */}
-                        <div className="mt-8 flex flex-col items-center drop-shadow-md">
+                        <div className="mt-12 flex flex-col items-center drop-shadow-md">
                           <span className="text-[10px] font-medium opacity-90">Monday, January 14</span>
-                          <span className="text-5xl font-bold tracking-tighter leading-none font-sans">9:41</span>
+                          <span className="text-6xl font-bold tracking-tighter leading-none font-sans">9:41</span>
                         </div>
 
                         <div className="flex-1" />
@@ -1281,7 +1360,7 @@ export default function App() {
                         id="theme"
                         onChange={(e) => applyTheme(e.target.value)}
                         className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-                        defaultValue=""
+                        value={selectedTheme}
                       >
                         <option value="">Select a theme...</option>
                         {THEMES.map((theme, index) => (
@@ -1302,12 +1381,12 @@ export default function App() {
                         id="device"
                         onChange={(e) => handleDeviceChange(e.target.value)}
                         className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-                        defaultValue=""
+                        value={selectedDevice}
                       >
                         <option value="">Select a device...</option>
                         {IOS_DEVICES.map((device, index) => (
                           <option key={index} value={index}>
-                            {device.name} ({device.width}×{device.height})
+                            {device.name}
                           </option>
                         ))}
                       </select>
@@ -1352,6 +1431,46 @@ export default function App() {
                         <option value="month">Month</option>
                         <option value="year">Year</option>
                       </select>
+                    </div>
+
+                    <div className="space-y-4 pt-4 border-t border-border">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          id="useTarget"
+                          checked={config.useTarget}
+                          onChange={(e) => handleChange('useTarget', e.target.checked)}
+                          className="w-4 h-4 rounded border-primary text-primary focus:ring-primary"
+                        />
+                        <Label htmlFor="useTarget" className="font-semibold cursor-pointer select-none">Target Goal Mode</Label>
+                      </div>
+
+                      {config.useTarget && (
+                        <div className="space-y-4 pl-4 border-l-2 border-primary/20 animate-in fade-in slide-in-from-top-2 duration-300">
+                          <div className="space-y-2">
+                            <Label htmlFor="targetDate">Target Date</Label>
+                            <Input
+                              id="targetDate"
+                              type="date"
+                              value={config.targetDate}
+                              onChange={(e) => handleChange('targetDate', e.target.value)}
+                              className="bg-background/50"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label htmlFor="targetTitle">Goal Title</Label>
+                            <Input
+                              id="targetTitle"
+                              type="text"
+                              placeholder="e.g. Marathon Day"
+                              value={config.targetTitle}
+                              onChange={(e) => handleChange('targetTitle', e.target.value)}
+                              className="bg-background/50"
+                            />
+                            <p className="text-[10px] text-muted-foreground">Displayed at the bottom of wallpaper</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     <div className="space-y-2">
@@ -1507,6 +1626,34 @@ export default function App() {
                           />
                         </div>
                       </div>
+
+                      {config.useTarget && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                          <Label htmlFor="targetcolor">Target Date Color</Label>
+                          <div className="flex gap-2">
+                            <div className="relative flex-1">
+                              <Input
+                                id="targetcolor"
+                                type="text"
+                                value={config.targetcolor}
+                                onChange={(e) => handleChange('targetcolor', e.target.value.replace('#', ''))}
+                                className="bg-background/50 pl-12"
+                                placeholder="ef4444"
+                              />
+                              <div
+                                className="absolute left-3 top-1/2 -translate-y-1/2 w-6 h-6 rounded border border-border"
+                                style={{ backgroundColor: `#${config.targetcolor}` }}
+                              />
+                            </div>
+                            <input
+                              type="color"
+                              value={`#${config.targetcolor}`}
+                              onChange={(e) => handleChange('targetcolor', e.target.value.replace('#', ''))}
+                              className="w-12 h-10 rounded border border-input cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      )}
 
                       <div className="space-y-2">
                         <Label htmlFor="textcolor">Text Color</Label>

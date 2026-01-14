@@ -14,32 +14,23 @@ try {
 }
 
 /**
- * Controller to generate PNG wallpaper image with extensive customization
- * GET endpoint that returns a PNG image with calendar dots
- * 
- * Query Parameters:
- * - width: Image width (default: 1080)
- * - height: Image height (default: 2400)
- * - mode: 'month' or 'year' (default: 'month')
- * - timezone: Timezone offset in hours (default: 0, e.g., +5 for PKT)
- * - paddingtop: Top padding in pixels (default: 0)
- * - paddingbottom: Bottom padding in pixels (default: 0)
- * - paddingleft: Left padding in pixels (default: 0)
- * - paddingright: Right padding in pixels (default: 0)
- * - bgcolor: Background color in hex (default: #71717a)
- * - passedcolor: Color for passed days dots (default: #f97316)
- * - currentcolor: Color for current day dot (default: #fbbf24)
- * - futurecolor: Color for future days dots (default: #52525b)
- * - textcolor: Color for bottom text (default: #ffffff)
- * - cols: Number of columns (default: 15)
- * - dotradius: Dot radius multiplier (default: 1.0)
+ * Controller to generate Target Goal Wallpaper
+ * GET endpoint that returns a PNG image with dots representing days from start of period to target date.
  */
-export const getWallpaperImage = async (req, res) => {
+export const getTargetWallpaperImage = async (req, res) => {
     try {
         // Get dimensions from query params or use defaults
         const width = parseInt(req.query.width) || 1080;
         const height = parseInt(req.query.height) || 2400;
-        const mode = req.query.mode || 'month'; // 'month' or 'year'
+        const mode = req.query.mode || 'month'; // 'month' or 'year' defines the START date
+
+        // Target Params
+        const targetDateStr = req.query.targetDate;
+        const targetTitle = req.query.targetTitle;
+
+        if (!targetDateStr || !targetTitle) {
+            return res.status(400).json({ error: 'Target Date and Target Title are required for this endpoint.' });
+        }
 
         // Timezone support (offset in hours)
         const timezoneOffset = parseFloat(req.query.timezone) || 0;
@@ -56,6 +47,8 @@ export const getWallpaperImage = async (req, res) => {
         const currentColor = '#' + (req.query.currentcolor || 'fbbf24').replace('#', '');
         const futureColor = '#' + (req.query.futurecolor || '52525b').replace('#', '');
         const textColor = '#' + (req.query.textcolor || 'ffffff').replace('#', '');
+        // New Param: Color for the target date dot itself
+        const targetColor = '#' + (req.query.targetcolor || 'ef4444').replace('#', '');
 
         // Grid customization
         const cols = parseInt(req.query.cols) || 15;
@@ -69,27 +62,51 @@ export const getWallpaperImage = async (req, res) => {
         const now = new Date();
         const localTime = new Date(now.getTime() + (timezoneOffset * 60 * 60 * 1000));
 
-        let totalDays, daysPassed, title;
-
+        // Determine Start Date
+        let startDate;
         if (mode === 'month') {
-            const nextMonth = new Date(localTime.getFullYear(), localTime.getMonth() + 1, 1);
-            const thisMonth = new Date(localTime.getFullYear(), localTime.getMonth(), 1);
-            totalDays = Math.floor((nextMonth - thisMonth) / (1000 * 60 * 60 * 24));
-            daysPassed = localTime.getDate();
-            title = localTime.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+            startDate = new Date(localTime.getFullYear(), localTime.getMonth(), 1);
         } else {
-            const isLeapYear = (localTime.getFullYear() % 4 === 0 &&
-                (localTime.getFullYear() % 100 !== 0 || localTime.getFullYear() % 400 === 0));
-            totalDays = isLeapYear ? 366 : 365;
-
-            const startOfYear = new Date(localTime.getFullYear(), 0, 1);
-            daysPassed = Math.ceil((localTime - startOfYear) / (1000 * 60 * 60 * 24)) + 1;
-            title = `Year ${localTime.getFullYear()}`;
+            // Year or default
+            startDate = new Date(localTime.getFullYear(), 0, 1);
         }
 
-        // Calculate days left
-        const daysLeft = totalDays - daysPassed;
-        const percentComplete = Math.floor((daysPassed / totalDays) * 100);
+        // Parse Target Date
+        const targetDate = new Date(targetDateStr);
+
+        // Validate dates
+        if (isNaN(targetDate.getTime())) {
+            return res.status(400).json({ error: 'Invalid Target Date format' });
+        }
+
+        // Calculate total days (Start -> Target)
+        const diffTime = targetDate - startDate;
+        const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+        if (totalDays <= 0) {
+            return res.status(400).json({
+                error: 'Target Date must be after the start of the current period (Year or Month start).'
+            });
+        }
+
+        // Calculate days passed (Start -> Today)
+        const diffPassed = localTime - startDate;
+        let daysPassed = Math.floor(diffPassed / (1000 * 60 * 60 * 24)) + 1;
+
+        // Calculate Days Left and Percentage for display
+        // Days Left = Total (Goal) - Passed. 
+        // If Passed > Total, it's 0 or negative.
+        let daysLeft = totalDays - daysPassed;
+        if (daysLeft < 0) daysLeft = 0;
+
+        // Percentage
+        let percentComplete = Math.floor((daysPassed / totalDays) * 100);
+        if (percentComplete > 100) percentComplete = 100;
+        if (daysPassed < 1) percentComplete = 0;
+
+        // Clamp daysPassed for dot coloring
+        if (daysPassed < 1) daysPassed = 1;
+
 
         // Grid layout
         const rows = Math.ceil(totalDays / cols);
@@ -135,32 +152,58 @@ export const getWallpaperImage = async (req, res) => {
             ctx.beginPath();
             ctx.arc(x, y, dotSize / 2, 0, Math.PI * 2);
 
-            if (i < daysPassed - 1) {
-                // Passed days
-                ctx.fillStyle = passedColor;
-            } else if (i === daysPassed - 1) {
-                // Current day
-                ctx.fillStyle = currentColor;
+            // Logic for coloring
+            // i is 0-indexed (0 = Day 1).
+            // daysPassed is 1-indexed.
+
+            // Check if this is the Target Date Dot (the very last dot)
+            const isTargetDot = (i === totalDays - 1);
+
+            if (isTargetDot) {
+                // Highlight Target Dot
+                ctx.fillStyle = targetColor;
             } else {
-                // Future days
-                ctx.fillStyle = futureColor;
+                if (i < daysPassed - 1) {
+                    // Completely passed
+                    ctx.fillStyle = passedColor;
+                } else if (i === daysPassed - 1) {
+                    // Current day
+                    ctx.fillStyle = currentColor;
+                } else {
+                    // Future
+                    ctx.fillStyle = futureColor;
+                }
             }
+
+            // Correction for Over-shot:
+            if (daysPassed > totalDays && !isTargetDot) {
+                // If we passed the target, everything except the target dot (which stays highlighted) is passed.
+                ctx.fillStyle = passedColor;
+            }
+
             ctx.fill();
         }
 
-        // Bottom text - Auto-positioned below grid with safe spacing
-        const bottomY = startY + gridHeight + Math.floor(textReservedSpace / 2);
-
-        // Set font for bottom text (Poppins)
+        // Set font for bottom text (Poppins/GoogleSans)
         ctx.fillStyle = textColor;
         const fontSize = Math.floor(width / 25);
         ctx.font = `${fontSize}px GoogleSans, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
 
-        // Draw combined text: "Xd left • Y%"
-        const bottomText = `${daysLeft}d left • ${percentComplete}%`;
-        ctx.fillText(bottomText, width / 2, bottomY);
+        // 1. Draw "Days Left • %" immediately below grid (standard position)
+        const infoY = startY + gridHeight + Math.floor(textReservedSpace / 2);
+        const infoText = `${daysLeft}d left • ${percentComplete}%`;
+        ctx.fillText(infoText, width / 2, infoY);
+
+        // 2. Draw "Target Title" at the BOTTOM of the screen
+        // Account for paddingBottom and some margin
+        // We ensure it's at least below the info text
+        const safeBottomY = height - paddingBottom - (fontSize * 1.5);
+        const titleY = Math.max(safeBottomY, infoY + fontSize * 2);
+
+        ctx.font = `${Math.floor(fontSize * 1.2)}px GoogleSans, sans-serif`; // Slightly larger for title
+        ctx.fillText(targetTitle, width / 2, titleY);
 
         // Convert canvas to PNG buffer
         const buffer = canvas.toBuffer('image/png');
@@ -177,12 +220,10 @@ export const getWallpaperImage = async (req, res) => {
         res.send(buffer);
 
     } catch (error) {
-        console.error('Error generating wallpaper:', error);
+        console.error('Error generating target wallpaper:', error);
         res.status(500).json({
-            error: 'Failed to generate wallpaper',
+            error: 'Failed to generate target wallpaper',
             message: error.message
         });
     }
 };
-
-
