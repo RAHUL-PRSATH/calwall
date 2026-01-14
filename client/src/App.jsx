@@ -485,6 +485,65 @@ const IOS_DEVICES = [
   { name: "iPhone SE (2nd gen)", width: 750, height: 1334 },
 ];
 
+// Android Device Presets
+const ANDROID_DEVICES = [
+  { name: "Samsung Galaxy S24 Ultra", width: 1440, height: 3120 },
+  { name: "Samsung Galaxy S24+", width: 1440, height: 3120 },
+  { name: "Samsung Galaxy S24", width: 1080, height: 2340 },
+
+  { name: "Samsung Galaxy S23 Ultra", width: 1440, height: 3088 },
+  { name: "Samsung Galaxy S23+", width: 1080, height: 2340 },
+  { name: "Samsung Galaxy S23", width: 1080, height: 2340 },
+
+  { name: "Samsung Galaxy S22 Ultra", width: 1440, height: 3088 },
+  { name: "Samsung Galaxy S22+", width: 1080, height: 2340 },
+  { name: "Samsung Galaxy S22", width: 1080, height: 2340 },
+
+  { name: "Samsung Galaxy S21 Ultra", width: 1440, height: 3200 },
+  { name: "Samsung Galaxy S21+", width: 1080, height: 2400 },
+  { name: "Samsung Galaxy S21", width: 1080, height: 2400 },
+
+  { name: "Samsung Galaxy Z Fold 5", width: 1812, height: 2176 },
+  { name: "Samsung Galaxy Z Flip 5", width: 1080, height: 2640 },
+  { name: "Samsung Galaxy Z Fold 4", width: 1812, height: 2176 },
+  { name: "Samsung Galaxy Z Flip 4", width: 1080, height: 2640 },
+
+  { name: "Google Pixel 8 Pro", width: 1344, height: 2992 },
+  { name: "Google Pixel 8", width: 1080, height: 2400 },
+  { name: "Google Pixel 7 Pro", width: 1440, height: 3120 },
+  { name: "Google Pixel 7", width: 1080, height: 2400 },
+  { name: "Google Pixel 6 Pro", width: 1440, height: 3120 },
+  { name: "Google Pixel 6", width: 1080, height: 2400 },
+
+  { name: "OnePlus 12", width: 1440, height: 3168 },
+  { name: "OnePlus 11", width: 1440, height: 3216 },
+  { name: "OnePlus 10 Pro", width: 1440, height: 3216 },
+  { name: "OnePlus 9 Pro", width: 1440, height: 3216 },
+
+  { name: "Xiaomi 14 Pro", width: 1440, height: 3200 },
+  { name: "Xiaomi 13 Pro", width: 1440, height: 3200 },
+  { name: "Xiaomi 12 Pro", width: 1440, height: 3200 },
+
+  { name: "Oppo Find X6 Pro", width: 1440, height: 3216 },
+  { name: "Oppo Find X5 Pro", width: 1440, height: 3216 },
+
+  { name: "Vivo X100 Pro", width: 1260, height: 2800 },
+  { name: "Vivo X90 Pro", width: 1260, height: 2800 },
+
+  { name: "Motorola Edge 40 Pro", width: 1080, height: 2400 },
+  { name: "Motorola Edge 30 Pro", width: 1080, height: 2400 },
+
+  { name: "Sony Xperia 1 V", width: 1644, height: 3840 },
+  { name: "Sony Xperia 5 V", width: 1080, height: 2520 },
+
+  { name: "Asus ROG Phone 7", width: 1080, height: 2448 },
+  { name: "Asus Zenfone 10", width: 1080, height: 2400 },
+
+  { name: "Nothing Phone (2)", width: 1080, height: 2400 },
+  { name: "Nothing Phone (1)", width: 1080, height: 2400 }
+];
+
+
 // Common Timezones
 const TIMEZONES = [
   { name: "UTC-12:00 (Baker Island)", offset: -12 },
@@ -592,6 +651,20 @@ export default function App() {
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const [previewSrc, setPreviewSrc] = useState('');
 
+  // Platform selection state (iOS or Android)
+  const [selectedPlatform, setSelectedPlatform] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('selectedPlatform') || 'ios';
+    }
+    return 'ios';
+  });
+
+  // Android device search
+  const [androidSearchQuery, setAndroidSearchQuery] = useState('');
+
+  // iOS device search
+  const [iosSearchQuery, setIosSearchQuery] = useState('');
+
   // Track carousel changes
   useEffect(() => {
     if (!carouselApi) return;
@@ -636,15 +709,22 @@ export default function App() {
     localStorage.setItem('selectedTheme', selectedTheme);
   }, [selectedTheme]);
 
-  // Handle device selection
+  useEffect(() => {
+    localStorage.setItem('selectedPlatform', selectedPlatform);
+  }, [selectedPlatform]);
+
+  // Handle device selection (works for both iOS and Android)
   const handleDeviceChange = (deviceIndex) => {
     setSelectedDevice(deviceIndex);
     if (deviceIndex === '') return;
-    const device = IOS_DEVICES[parseInt(deviceIndex)];
+
+    const deviceList = selectedPlatform === 'ios' ? IOS_DEVICES : ANDROID_DEVICES;
+    const device = deviceList[parseInt(deviceIndex)];
+
     if (device) {
       // Calculate responsive padding using iPhone 11 as reference (Height: 1792, Top: 450, Bottom: 100)
       const refHeight = 1792;
-      const refTop = 450;
+      const refTop = selectedPlatform === 'ios' ? 450 : 150; // Android uses less top padding
       const refBottom = 100;
 
       const paddingTop = Math.round((device.height / refHeight) * refTop);
@@ -662,6 +742,16 @@ export default function App() {
       toast.success(`Applied ${device.name} preset`);
     }
   };
+
+  // Filter iOS devices based on search query
+  const filteredIosDevices = IOS_DEVICES.filter(device =>
+    device.name.toLowerCase().includes(iosSearchQuery.toLowerCase())
+  );
+
+  // Filter Android devices based on search query
+  const filteredAndroidDevices = ANDROID_DEVICES.filter(device =>
+    device.name.toLowerCase().includes(androidSearchQuery.toLowerCase())
+  );
 
   // Base API URL
   const API_BASE = SERVER_URL;
@@ -1107,16 +1197,23 @@ export default function App() {
                 <CardTitle className="text-2xl">Live Preview</CardTitle>
                 <CardDescription>Your wallpaper updates in real-time</CardDescription>
               </CardHeader>
-              <CardContent className="flex justify-center p-8">
-                {/* iOS Device Frame */}
+              <CardContent className="flex flex-col items-center p-8 space-y-4">
+                {/* Device Frame */}
                 <div className="relative">
-                  {/* iPhone Frame */}
+                  {/* Phone Frame */}
                   <div className="relative bg-gradient-to-br from-muted to-muted-foreground/20 rounded-[3rem] p-3 shadow-2xl">
-                    {/* Notch */}
-                    <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-muted-foreground/30 rounded-b-3xl z-10" />
+                    {/* Notch (only show for modern devices) */}
+                    {selectedPlatform === 'ios' && (
+                      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-muted-foreground/30 rounded-b-3xl z-10" />
+                    )}
 
-                    {/* Screen */}
-                    <div className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden aspect-[9/19.5] w-64 shadow-inner flex items-center justify-center group">
+                    {/* Screen - Dynamic aspect ratio based on selected device */}
+                    <div
+                      className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden w-64 shadow-inner flex items-center justify-center group"
+                      style={{
+                        aspectRatio: `${config.width} / ${config.height}`
+                      }}
+                    >
                       {/* Canvas Wallpaper */}
                       <canvas
                         ref={canvasRef}
@@ -1184,7 +1281,7 @@ export default function App() {
                         <DialogHeader className="shrink-0">
                           <DialogTitle className="text-xl sm:text-2xl">Set Up Your Dynamic Wallpaper</DialogTitle>
                           <DialogDescription className="text-sm">
-                            Follow these steps to automatically update your iPhone wallpaper
+                            Follow these steps to automatically update your {selectedPlatform === 'ios' ? 'iPhone' : 'Android'} wallpaper
                           </DialogDescription>
                         </DialogHeader>
 
@@ -1256,54 +1353,79 @@ export default function App() {
                                 </Card>
                               </CarouselItem>
 
-                              {/* Step 2: Shortcuts Setup */}
+                              {/* Step 2: Platform-Specific Automation */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
                                   <CardHeader className="p-4 pb-2">
                                     <CardTitle className="flex items-center gap-2 text-lg">
                                       <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
-                                      iPhone Automation
+                                      {selectedPlatform === 'ios' ? 'iPhone Automation' : 'Install MacroDroid'}
                                     </CardTitle>
-                                    <CardDescription className="text-xs">Set up automatic updates</CardDescription>
+                                    <CardDescription className="text-xs">
+                                      {selectedPlatform === 'ios' ? 'Set up automatic updates' : 'Download automation app'}
+                                    </CardDescription>
                                   </CardHeader>
                                   <CardContent className="space-y-3 p-4 pt-0">
-                                    <ol className="space-y-2">
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Open Shortcuts App</p>
-                                          <p className="text-xs text-muted-foreground">Find app on iPhone</p>
+                                    {selectedPlatform === 'ios' ? (
+                                      <ol className="space-y-2">
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Open Shortcuts App</p>
+                                            <p className="text-xs text-muted-foreground">Find app on iPhone</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Create Automation</p>
+                                            <p className="text-xs text-muted-foreground">"Automation" → "+" → "Personal Automation"</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Select "Time of Day"</p>
+                                            <p className="text-xs text-muted-foreground">Pick a time (e.g. 12:00 AM)</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Run Immediately</p>
+                                            <p className="text-xs text-muted-foreground">Toggle ON "Run Immediately"</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">New Shortcut</p>
+                                            <p className="text-xs text-muted-foreground">Tap "New Blank Automation"</p>
+                                          </div>
+                                        </li>
+                                      </ol>
+                                    ) : (
+                                      <div className="space-y-3">
+                                        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                          <p className="text-xs font-semibold text-green-700 dark:text-green-400 mb-2">Install MacroDroid</p>
+                                          <p className="text-xs text-muted-foreground mb-3">Install MacroDroid from Google Play Store to automate wallpaper updates</p>
+                                          <Button
+                                            onClick={() => window.open('https://play.google.com/store/apps/details?id=com.arlosoft.macrodroid', '_blank')}
+                                            variant="default"
+                                            size="sm"
+                                            className="w-full gap-2"
+                                          >
+                                            <Download className="w-3 h-3" />
+                                            Open Play Store
+                                          </Button>
                                         </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Create Automation</p>
-                                          <p className="text-xs text-muted-foreground">"Automation" → "+" → "Personal Automation"</p>
+                                        <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                          <p className="text-xs">
+                                            <strong>Note:</strong> After installing, return here to continue setup
+                                          </p>
                                         </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Select "Time of Day"</p>
-                                          <p className="text-xs text-muted-foreground">Pick a time (e.g. 12:00 AM)</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Run Immediately</p>
-                                          <p className="text-xs text-muted-foreground">Toggle ON "Run Immediately"</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">New Shortcut</p>
-                                          <p className="text-xs text-muted-foreground">Tap "New Blank Automation"</p>
-                                        </div>
-                                      </li>
-                                    </ol>
+                                      </div>
+                                    )}
                                   </CardContent>
                                 </Card>
                               </CarouselItem>
@@ -1351,60 +1473,161 @@ export default function App() {
                                 </Card>
                               </CarouselItem>
 
-                              {/* Step 4: Configure Shortcut */}
+                              {/* Step 4 (Android Only): Setup Macro */}
+                              {selectedPlatform === 'android' && (
+                                <CarouselItem>
+                                  <Card className="border-0 shadow-none">
+                                    <CardHeader className="p-4 pb-2">
+                                      <CardTitle className="flex items-center gap-2 text-lg">
+                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
+                                        Setup Macro
+                                      </CardTitle>
+                                      <CardDescription className="text-xs">Configure MacroDroid automation</CardDescription>
+                                    </CardHeader>
+                                    <CardContent className="space-y-3 p-4 pt-0">
+                                      <ol className="space-y-2">
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Add Macro</p>
+                                            <p className="text-xs text-muted-foreground">Open MacroDroid and tap "+" to add a new macro</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Add Trigger</p>
+                                            <p className="text-xs text-muted-foreground">Search "Day/Time" → Set time to 00:01:00 and check all days</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Add Action</p>
+                                            <p className="text-xs text-muted-foreground">Search "HTTP Request" → Set method to GET</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Configure Request</p>
+                                            <p className="text-xs text-muted-foreground">Paste URL (from Step 3) → Check "Block next actions until complete"</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Save to File</p>
+                                            <p className="text-xs text-muted-foreground">Enable "Save HTTP request to file" → Select Downloads → Name: wallpaper.png</p>
+                                          </div>
+                                        </li>
+                                        <li className="flex gap-2">
+                                          <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">6</span>
+                                          <div>
+                                            <p className="font-semibold text-sm">Test Macro</p>
+                                            <p className="text-xs text-muted-foreground">Save macro and test it to ensure it downloads the wallpaper</p>
+                                          </div>
+                                        </li>
+                                      </ol>
+                                    </CardContent>
+                                  </Card>
+                                </CarouselItem>
+                              )}
+
+                              {/* Step 4/5: Configure Shortcut/Wallpaper */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
                                   <CardHeader className="p-4 pb-2">
                                     <CardTitle className="flex items-center gap-2 text-lg">
-                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
-                                      Configure Shortcut
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                                        {selectedPlatform === 'ios' ? '4' : '5'}
+                                      </span>
+                                      {selectedPlatform === 'ios' ? 'Configure Shortcut' : 'Set Wallpaper'}
                                     </CardTitle>
-                                    <CardDescription className="text-xs">Add actions to download wallpaper</CardDescription>
+                                    <CardDescription className="text-xs">
+                                      {selectedPlatform === 'ios' ? 'Add actions to download wallpaper' : 'Apply the downloaded wallpaper'}
+                                    </CardDescription>
                                   </CardHeader>
                                   <CardContent className="space-y-3 p-4 pt-0">
-                                    <ol className="space-y-2">
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Add "Get Contents of URL"</p>
-                                          <p className="text-xs text-muted-foreground">Search and add action</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Paste Your URL</p>
-                                          <p className="text-xs text-muted-foreground">Paste URL from previous step</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Add "Set Wallpaper"</p>
-                                          <p className="text-xs text-muted-foreground">Search and add action</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Disable Options</p>
-                                          <p className="text-xs text-muted-foreground">Turn OFF "Crop" and "Preview"</p>
-                                        </div>
-                                      </li>
-                                      <li className="flex gap-2">
-                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
-                                        <div>
-                                          <p className="font-semibold text-sm">Test It!</p>
-                                          <p className="text-xs text-muted-foreground">Tap "Run" to test</p>
-                                        </div>
-                                      </li>
-                                    </ol>
+                                    {selectedPlatform === 'ios' ? (
+                                      <>
+                                        <ol className="space-y-2">
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Add "Get Contents of URL"</p>
+                                              <p className="text-xs text-muted-foreground">Search and add action</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Paste Your URL</p>
+                                              <p className="text-xs text-muted-foreground">Paste URL from previous step</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Add "Set Wallpaper"</p>
+                                              <p className="text-xs text-muted-foreground">Search and add action</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Disable Options</p>
+                                              <p className="text-xs text-muted-foreground">Turn OFF "Crop" and "Preview"</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Test It!</p>
+                                              <p className="text-xs text-muted-foreground">Tap "Run" to test</p>
+                                            </div>
+                                          </li>
+                                        </ol>
 
-                                    <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                                      <p className="text-xs text-green-700 dark:text-green-400">
-                                        <strong>Success!</strong> Wallpaper will update daily. Enjoy! 🎉
-                                      </p>
-                                    </div>
+                                        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                          <p className="text-xs text-green-700 dark:text-green-400">
+                                            <strong>Success!</strong> Wallpaper will update daily. Enjoy! 🎉
+                                          </p>
+                                        </div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <ol className="space-y-2">
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Open Settings</p>
+                                              <p className="text-xs text-muted-foreground">Go to device Settings → Display → Wallpaper</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Select File</p>
+                                              <p className="text-xs text-muted-foreground">Choose "My Photos" or "Gallery" → Navigate to Downloads</p>
+                                            </div>
+                                          </li>
+                                          <li className="flex gap-2">
+                                            <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
+                                            <div>
+                                              <p className="font-semibold text-sm">Apply Wallpaper</p>
+                                              <p className="text-xs text-muted-foreground">Select wallpaper.png → Set as Home screen or Lock screen</p>
+                                            </div>
+                                          </li>
+                                        </ol>
+
+                                        <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                          <p className="text-xs text-green-700 dark:text-green-400">
+                                            <strong>Done!</strong> Your wallpaper will auto-update daily at 00:01. Enjoy! 🎉
+                                          </p>
+                                        </div>
+                                      </>
+                                    )}
                                   </CardContent>
                                 </Card>
                               </CarouselItem>
@@ -1413,7 +1636,7 @@ export default function App() {
                             <div className="flex items-center justify-between mt-6 shrink-0">
                               <CarouselPrevious className="static translate-y-0" />
                               <div className="flex gap-2">
-                                {[0, 1, 2, 3].map((index) => (
+                                {Array.from({ length: selectedPlatform === 'ios' ? 4 : 5 }, (_, index) => (
                                   <button
                                     key={index}
                                     onClick={() => carouselApi?.scrollTo(index)}
@@ -1425,7 +1648,7 @@ export default function App() {
                                   />
                                 ))}
                               </div>
-                              {currentStep === 3 ? (
+                              {(selectedPlatform === 'ios' && currentStep === 3) || (selectedPlatform === 'android' && currentStep === 4) ? (
                                 <Button size="sm" onClick={() => setIsModalOpen(false)}>
                                   Finish
                                 </Button>
@@ -1481,24 +1704,112 @@ export default function App() {
                       </p>
                     </div>
 
-                    {/* iOS Device Selector */}
-                    <div className="space-y-2 pb-4 border-b border-border">
-                      <Label htmlFor="device">iOS Device Presets</Label>
-                      <select
-                        id="device"
-                        onChange={(e) => handleDeviceChange(e.target.value)}
-                        className="w-full px-3 py-2 bg-background border border-input rounded-md text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-colors"
-                        value={selectedDevice}
-                      >
-                        <option value="">Select a device...</option>
-                        {IOS_DEVICES.map((device, index) => (
-                          <option key={index} value={index}>
-                            {device.name}
-                          </option>
-                        ))}
-                      </select>
+                    {/* Device Selector */}
+                    <div className="space-y-3 pb-4 border-b border-border">
+                      <Label>Device Presets</Label>
+
+                      {/* Platform Tabs */}
+                      <div className="flex gap-2 p-1 bg-muted rounded-lg">
+                        <button
+                          onClick={() => {
+                            setSelectedPlatform('ios');
+                            setSelectedDevice('');
+                            setAndroidSearchQuery('');
+                            setIosSearchQuery('');
+                          }}
+                          className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${selectedPlatform === 'ios'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                          iOS
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedPlatform('android');
+                            setSelectedDevice('');
+                            setAndroidSearchQuery('');
+                            setIosSearchQuery('');
+                          }}
+                          className={`flex-1 px-3 py-2 rounded-md text-sm font-medium transition-all ${selectedPlatform === 'android'
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                          Android
+                        </button>
+                      </div>
+
+                      {/* Searchable Device Input with Clear Button */}
+                      <div className="relative">
+                        <Input
+                          type="text"
+                          placeholder={`Search ${selectedPlatform === 'ios' ? 'iPhone' : 'Android'} devices...`}
+                          value={selectedPlatform === 'ios' ? iosSearchQuery : androidSearchQuery}
+                          onChange={(e) => {
+                            const value = e.target.value;
+                            if (selectedPlatform === 'ios') {
+                              setIosSearchQuery(value);
+                              // Auto-select if exact match
+                              const matchedDevice = IOS_DEVICES.find(d => d.name.toLowerCase() === value.toLowerCase());
+                              if (matchedDevice) {
+                                const index = IOS_DEVICES.indexOf(matchedDevice);
+                                handleDeviceChange(index.toString());
+                              }
+                            } else {
+                              setAndroidSearchQuery(value);
+                              // Auto-select if exact match
+                              const matchedDevice = ANDROID_DEVICES.find(d => d.name.toLowerCase() === value.toLowerCase());
+                              if (matchedDevice) {
+                                const index = ANDROID_DEVICES.indexOf(matchedDevice);
+                                handleDeviceChange(index.toString());
+                              }
+                            }
+                          }}
+                          className="bg-background/50 text-sm pr-10"
+                          list={`${selectedPlatform}-devices-list`}
+                        />
+
+                        {/* Clear Button */}
+                        {((selectedPlatform === 'ios' && iosSearchQuery) || (selectedPlatform === 'android' && androidSearchQuery)) && (
+                          <button
+                            onClick={() => {
+                              if (selectedPlatform === 'ios') {
+                                setIosSearchQuery('');
+                              } else {
+                                setAndroidSearchQuery('');
+                              }
+                              setSelectedDevice('');
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded-full transition-colors"
+                            aria-label="Clear selection"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        )}
+
+                        <datalist id={`${selectedPlatform}-devices-list`}>
+                          {selectedPlatform === 'ios' ? (
+                            filteredIosDevices.map((device, index) => (
+                              <option key={index} value={device.name} />
+                            ))
+                          ) : (
+                            filteredAndroidDevices.map((device, index) => (
+                              <option key={index} value={device.name} />
+                            ))
+                          )}
+                        </datalist>
+                      </div>
+
+                      {/* Help Text */}
                       <p className="text-xs text-muted-foreground">
-                        Automatically sets width and height for the selected iPhone model
+                        {selectedPlatform === 'ios'
+                          ? 'Search and select your iPhone model, or use custom dimensions below'
+                          : 'Search and select your Android device, or use custom dimensions below'
+                        }
                       </p>
                     </div>
 

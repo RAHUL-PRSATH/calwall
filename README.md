@@ -2,10 +2,12 @@
 
 CalWall Studio is a sophisticated web application designed for generating and customizing dynamic, calendar-based wallpapers. It combines a powerful React-based frontend for real-time preview and customization with a robust Node.js backend for high-quality image generation using Canvas.
 
-![Main Interface](docs/main.png)
+![Main Interface](docs/CalWall.png)
 
 ## 📖 Overview
 CalWall Studio simplifies the creation of aesthetic, data-driven wallpapers. Whether you want to track the year's progress, visualize the days left, or simply have a beautiful, auto-updating calendar on your lock screen, CalWall provides the tools to design and generate it instantly. The application bridges the gap between static design and dynamic data, offering a seamless "Studio" experience where every tweak is reflected in real-time.
+
+![Main Interface](docs/main.png)
 
 ## 🌟 Features
 
