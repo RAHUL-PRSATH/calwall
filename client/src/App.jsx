@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Copy, Check, Download, RefreshCw, Moon, Sun, ChevronLeft, ChevronRight } from "lucide-react";
+import { Copy, Check, Download, RefreshCw, Moon, Sun, ChevronLeft, ChevronRight, Heart, Battery, Wifi, Signal, Flashlight, Camera } from "lucide-react";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -14,229 +14,430 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3000';
 
 // Theme presets
+// const THEMES = [
+//   {
+//     name: "Tech Blue",
+//     colors: {
+//       bgcolor: '0f172a',
+//       passedcolor: '3b82f6',
+//       currentcolor: '60a5fa', // Blue-400
+//       futurecolor: '1e293b',
+//       textcolor: 'e2e8f0'
+//     }
+//   },
+//   {
+//     name: "Cyberpunk Violet",
+//     colors: {
+//       bgcolor: '111827',
+//       passedcolor: '6366f1',
+//       currentcolor: 'a78bfa', // Violet-400
+//       futurecolor: '1f2937',
+//       textcolor: 'f3f4f6'
+//     }
+//   },
+//   {
+//     name: "Healthcare Green",
+//     colors: {
+//       bgcolor: '14181c',
+//       passedcolor: '10b981',
+//       currentcolor: '34d399', // Emerald-400
+//       futurecolor: '1f2937',
+//       textcolor: 'd1fae5'
+//     }
+//   },
+//   {
+//     name: "Industrial Steel",
+//     colors: {
+//       bgcolor: '1e293b',
+//       passedcolor: '64748b',
+//       currentcolor: 'cbd5e1', // Slate-300
+//       futurecolor: '334155',
+//       textcolor: 'f1f5f9'
+//     }
+//   },
+//   {
+//     name: "Finance Navy",
+//     colors: {
+//       bgcolor: '0c1222',
+//       passedcolor: '2563eb',
+//       currentcolor: '60a5fa', // Blue-400
+//       futurecolor: '1e2939',
+//       textcolor: 'dbeafe'
+//     }
+//   },
+//   {
+//     name: "Legal Ivory",
+//     colors: {
+//       bgcolor: 'fafaf9',
+//       passedcolor: '57534e',
+//       currentcolor: 'a8a29e', // Stone-400
+//       futurecolor: 'e7e5e4',
+//       textcolor: '1c1917'
+//     }
+//   },
+//   {
+//     name: "Construction Amber",
+//     colors: {
+//       bgcolor: 'fafaf9',
+//       passedcolor: 'a16207',
+//       currentcolor: 'facc15', // Yellow-400
+//       futurecolor: 'f5f5f4',
+//       textcolor: '422006'
+//     }
+//   },
+//   {
+//     name: "Wine & Hospitality",
+//     colors: {
+//       bgcolor: '1c0f13',
+//       passedcolor: '9f1239',
+//       currentcolor: 'fb7185', // Rose-400
+//       futurecolor: '2d1619',
+//       textcolor: 'ffe4e6'
+//     }
+//   },
+//   {
+//     name: "Ocean Maritime",
+//     colors: {
+//       bgcolor: '0f1419',
+//       passedcolor: '0891b2',
+//       currentcolor: '22d3ee', // Cyan-400
+//       futurecolor: '1e2832',
+//       textcolor: 'cffafe'
+//     }
+//   },
+//   {
+//     name: "Banking Emerald",
+//     colors: {
+//       bgcolor: '0c1713',
+//       passedcolor: '059669',
+//       currentcolor: '34d399', // Emerald-400
+//       futurecolor: '1a2c23',
+//       textcolor: 'd1fae5'
+//     }
+//   },
+//   {
+//     name: "Aviation Indigo",
+//     colors: {
+//       bgcolor: '1e1b4b',
+//       passedcolor: '6366f1',
+//       currentcolor: 'a5b4fc', // Indigo-300
+//       futurecolor: '312e81',
+//       textcolor: 'e0e7ff'
+//     }
+//   },
+//   {
+//     name: "Fashion Rose",
+//     colors: {
+//       bgcolor: '1f1315',
+//       passedcolor: 'e11d48',
+//       currentcolor: 'fb7185', // Rose-400
+//       futurecolor: '3a1f24',
+//       textcolor: 'ffe4e6'
+//     }
+//   },
+//   {
+//     name: "Café Espresso",
+//     colors: {
+//       bgcolor: '1c1410',
+//       passedcolor: '92400e',
+//       currentcolor: 'fbbf24', // Amber-400
+//       futurecolor: '322218',
+//       textcolor: 'fef3c7'
+//     }
+//   },
+//   {
+//     name: "Automotive Steel",
+//     colors: {
+//       bgcolor: '18181b',
+//       passedcolor: '52525b',
+//       currentcolor: 'a1a1aa', // Zinc-400
+//       futurecolor: '27272a',
+//       textcolor: 'fafafa'
+//     }
+//   },
+//   {
+//     name: "Medical White",
+//     colors: {
+//       bgcolor: 'ffffff',
+//       passedcolor: '475569',
+//       currentcolor: '3b82f6', // Blue-500 (Prominent override)
+//       futurecolor: 'f1f5f9',
+//       textcolor: '0f172a'
+//     }
+//   },
+//   {
+//     name: "Battlefield Orange",
+//     colors: {
+//       bgcolor: '1c1510',
+//       passedcolor: 'd97706',
+//       currentcolor: 'fbbf24', // Amber-400
+//       futurecolor: '312318',
+//       textcolor: 'fef3c7'
+//     }
+//   },
+//   {
+//     name: "Gaming Violet",
+//     colors: {
+//       bgcolor: '1e1329',
+//       passedcolor: '7c3aed',
+//       currentcolor: 'a78bfa', // Violet-400
+//       futurecolor: '2e1f40',
+//       textcolor: 'ede9fe'
+//     }
+//   },
+//   {
+//     name: "Cloud Computing",
+//     colors: {
+//       bgcolor: 'f0f9ff',
+//       passedcolor: '0284c7',
+//       currentcolor: '38bdf8', // Sky-400
+//       futurecolor: 'e0f2fe',
+//       textcolor: '0c4a6e'
+//     }
+//   },
+//   {
+//     name: "Luxury Gold",
+//     colors: {
+//       bgcolor: '18130c',
+//       passedcolor: 'ca8a04',
+//       currentcolor: 'facc15', // Yellow-400
+//       futurecolor: '2a2313',
+//       textcolor: 'fef9c3'
+//     }
+//   },
+//   {
+//     name: "Emergency Red",
+//     colors: {
+//       bgcolor: '1a0a0a',
+//       passedcolor: 'b91c1c',
+//       currentcolor: 'ef4444', // Red-500
+//       futurecolor: '2d1414',
+//       textcolor: 'fef2f2'
+//     }
+//   }
+// ];
 const THEMES = [
   {
-    name: "Cyberpunk Neon",
-    emoji: "1️⃣",
+    name: "Tech Blue",
+    emoji: "💻",
     colors: {
-      bgcolor: '0b0f19',
-      passedcolor: '00ffe1',
-      currentcolor: 'ff00ff',
-      futurecolor: '1b1f3b',
-      textcolor: '00ffe1'
+      bgcolor: '0a0e1a',
+      passedcolor: '4f7cff',
+      currentcolor: '7c9eff',
+      futurecolor: '1a1f2e',
+      textcolor: 'e8f0ff'
     }
   },
   {
-    name: "Cyberpunk Purple",
-    emoji: "2️⃣",
+    name: "Cyberpunk Violet",
+    emoji: "🌆",
     colors: {
-      bgcolor: '120a2a',
-      passedcolor: 'a855f7',
-      currentcolor: 'ec4899',
-      futurecolor: '23124d',
-      textcolor: 'e9d5ff'
+      bgcolor: '0d0a1f',
+      passedcolor: '8b5cf6',
+      currentcolor: 'a78bfa',
+      futurecolor: '1e1733',
+      textcolor: 'f3e8ff'
     }
   },
   {
-    name: "Matrix Green",
-    emoji: "3️⃣",
+    name: "Healthcare Green",
+    emoji: "🏥",
     colors: {
-      bgcolor: '000f0a',
-      passedcolor: '00ff6a',
-      currentcolor: 'a7f3d0',
-      futurecolor: '002211',
-      textcolor: '00ff6a'
+      bgcolor: '0a1613',
+      passedcolor: '14e8a6',
+      currentcolor: '5eead4',
+      futurecolor: '1a2c27',
+      textcolor: 'ccfbf1'
     }
   },
   {
-    name: "Hacker Dark",
-    emoji: "4️⃣",
+    name: "Industrial Steel",
+    emoji: "🏗️",
     colors: {
-      bgcolor: '0d1117',
-      passedcolor: '58a6ff',
-      currentcolor: 'f78166',
-      futurecolor: '21262d',
-      textcolor: 'c9d1d9'
+      bgcolor: '12151a',
+      passedcolor: '94a3b8',
+      currentcolor: 'cbd5e1',
+      futurecolor: '1e2329',
+      textcolor: 'f1f5f9'
     }
   },
   {
-    name: "AMOLED Black",
-    emoji: "5️⃣",
+    name: "Finance Navy",
+    emoji: "💼",
     colors: {
-      bgcolor: '000000',
-      passedcolor: 'ffffff',
-      currentcolor: 'facc15',
-      futurecolor: '222222',
-      textcolor: 'ffffff'
+      bgcolor: '070d1a',
+      passedcolor: '3b82f6',
+      currentcolor: '60a5fa',
+      futurecolor: '151d2e',
+      textcolor: 'dbeafe'
     }
   },
   {
-    name: "Minimal Grey",
-    emoji: "6️⃣",
+    name: "Legal Ivory",
+    emoji: "⚖️",
     colors: {
-      bgcolor: 'f4f4f5',
-      passedcolor: '09090b',
-      currentcolor: 'f97316',
-      futurecolor: 'd4d4d8',
-      textcolor: '09090b'
+      bgcolor: 'fefdfb',
+      passedcolor: '78716c',
+      currentcolor: 'a8a29e',
+      futurecolor: 'f5f3f0',
+      textcolor: '292524'
     }
   },
   {
-    name: "Soft Pastel",
-    emoji: "7️⃣",
+    name: "Construction Amber",
+    emoji: "🏗️",
     colors: {
-      bgcolor: 'faf5ff',
-      passedcolor: 'c084fc',
+      bgcolor: 'fffbf5',
+      passedcolor: 'f59e0b',
+      currentcolor: 'fbbf24',
+      futurecolor: 'fef3e2',
+      textcolor: '78350f'
+    }
+  },
+  {
+    name: "Wine & Hospitality",
+    emoji: "🍷",
+    colors: {
+      bgcolor: '1a0b0f',
+      passedcolor: 'fb7185',
+      currentcolor: 'fda4af',
+      futurecolor: '2e1519',
+      textcolor: 'ffe4e6'
+    }
+  },
+  {
+    name: "Ocean Maritime",
+    emoji: "⚓",
+    colors: {
+      bgcolor: '0a1419',
+      passedcolor: '22d3ee',
+      currentcolor: '67e8f9',
+      futurecolor: '1a2832',
+      textcolor: 'cffafe'
+    }
+  },
+  {
+    name: "Banking Emerald",
+    emoji: "🏦",
+    colors: {
+      bgcolor: '091713',
+      passedcolor: '10b981',
+      currentcolor: '34d399',
+      futurecolor: '1a2c23',
+      textcolor: 'd1fae5'
+    }
+  },
+  {
+    name: "Aviation Indigo",
+    emoji: "✈️",
+    colors: {
+      bgcolor: '151333',
+      passedcolor: '818cf8',
+      currentcolor: 'a5b4fc',
+      futurecolor: '2a2557',
+      textcolor: 'e0e7ff'
+    }
+  },
+  {
+    name: "Fashion Rose",
+    emoji: "👗",
+    colors: {
+      bgcolor: '1f0f16',
+      passedcolor: 'f43f5e',
       currentcolor: 'fb7185',
-      futurecolor: 'e9d5ff',
-      textcolor: '4a044e'
+      futurecolor: '3d1e29',
+      textcolor: 'ffe4e6'
     }
   },
   {
-    name: "Sunset Orange",
-    emoji: "8️⃣",
+    name: "Café Espresso",
+    emoji: "☕",
     colors: {
-      bgcolor: '331212',
-      passedcolor: 'fb923c',
-      currentcolor: 'fde047',
-      futurecolor: '592424',
+      bgcolor: '1a1108',
+      passedcolor: 'ea862d',
+      currentcolor: 'fb923c',
+      futurecolor: '332212',
+      textcolor: 'ffedd5'
+    }
+  },
+  {
+    name: "Automotive Steel",
+    emoji: "🚗",
+    colors: {
+      bgcolor: '0f1114',
+      passedcolor: '71717a',
+      currentcolor: 'a1a1aa',
+      futurecolor: '1f2225',
+      textcolor: 'fafafa'
+    }
+  },
+  {
+    name: "Medical White",
+    emoji: "🏥",
+    colors: {
+      bgcolor: 'ffffff',
+      passedcolor: '64748b',
+      currentcolor: '94a3b8',
+      futurecolor: 'f1f5f9',
+      textcolor: '1e293b'
+    }
+  },
+  {
+    name: "Battlefield Orange",
+    emoji: "🎖️",
+    colors: {
+      bgcolor: '1c140a',
+      passedcolor: 'ff8a3d',
+      currentcolor: 'ffb347',
+      futurecolor: '33250f',
       textcolor: 'fff7ed'
     }
   },
   {
-    name: "Ocean Blue",
-    emoji: "9️⃣",
+    name: "Gaming Violet",
+    emoji: "🎮",
     colors: {
-      bgcolor: '08233c',
-      passedcolor: '38bdf8',
-      currentcolor: '67e8f9',
-      futurecolor: '1e3a5f',
-      textcolor: 'e0f2fe'
+      bgcolor: '1a0f2e',
+      passedcolor: '9333ea',
+      currentcolor: 'a855f7',
+      futurecolor: '2e1a4d',
+      textcolor: 'f3e8ff'
     }
   },
   {
-    name: "Forest Green",
-    emoji: "🔟",
+    name: "Cloud Computing",
+    emoji: "☁️",
     colors: {
-      bgcolor: '0a1f14',
-      passedcolor: '22c55e',
-      currentcolor: 'a7f3d0',
-      futurecolor: '103d2c',
-      textcolor: 'dcfce7'
-    }
-  },
-  {
-    name: "Lavender Dream",
-    emoji: "1️⃣1️⃣",
-    colors: {
-      bgcolor: '2a183d',
-      passedcolor: 'c4b5fd',
-      currentcolor: 'f472b6',
-      futurecolor: '3f2a5a',
-      textcolor: 'f5f3ff'
-    }
-  },
-  {
-    name: "Rose Gold",
-    emoji: "1️⃣2️⃣",
-    colors: {
-      bgcolor: '221a1a',
-      passedcolor: 'fda4af',
-      currentcolor: 'fb7185',
-      futurecolor: '403030',
-      textcolor: 'fff1f2'
-    }
-  },
-  {
-    name: "Coffee Brown",
-    emoji: "1️⃣3️⃣",
-    colors: {
-      bgcolor: '24140c',
-      passedcolor: 'd6a15e',
-      currentcolor: 'fde68a',
-      futurecolor: '3a2617',
-      textcolor: 'fef3c7'
-    }
-  },
-  {
-    name: "Solarized Dark",
-    emoji: "1️⃣4️⃣",
-    colors: {
-      bgcolor: '00222b',
-      passedcolor: '2aa198',
-      currentcolor: 'b58900',
-      futurecolor: '00333f',
-      textcolor: 'eee8d5'
-    }
-  },
-  {
-    name: "Solarized Light",
-    emoji: "1️⃣5️⃣",
-    colors: {
-      bgcolor: 'fdf6e3',
-      passedcolor: '00736f',
-      currentcolor: 'b58900',
-      futurecolor: 'e5dcc4',
-      textcolor: '002b36'
-    }
-  },
-  {
-    name: "Retro Neon",
-    emoji: "1️⃣6️⃣",
-    colors: {
-      bgcolor: '0f0c29',
-      passedcolor: 'ff0080',
-      currentcolor: '00eaff',
-      futurecolor: '1a153f',
-      textcolor: 'fdf4ff'
-    }
-  },
-  {
-    name: "Vaporwave",
-    emoji: "1️⃣7️⃣",
-    colors: {
-      bgcolor: '230b33',
-      passedcolor: 'f472b6',
-      currentcolor: '67e8f9',
-      futurecolor: '3b104f',
-      textcolor: 'fde2f3'
-    }
-  },
-  {
-    name: "Arctic Ice",
-    emoji: "1️⃣8️⃣",
-    colors: {
-      bgcolor: 'f0f9ff',
+      bgcolor: 'f5fbff',
       passedcolor: '0ea5e9',
-      currentcolor: '06b6d4',
-      futurecolor: 'cfeffd',
-      textcolor: '0c4a6e'
+      currentcolor: '38bdf8',
+      futurecolor: 'e0f2fe',
+      textcolor: '075985'
     }
   },
   {
-    name: "Midnight Gold",
-    emoji: "1️⃣9️⃣",
+    name: "Luxury Gold",
+    emoji: "💎",
     colors: {
-      bgcolor: '0b0b0f',
-      passedcolor: 'facc15',
-      currentcolor: 'fde047',
-      futurecolor: '25252b',
-      textcolor: 'fff7d6'
+      bgcolor: '1a1408',
+      passedcolor: 'fbbf24',
+      currentcolor: 'fcd34d',
+      futurecolor: '332612',
+      textcolor: 'fef9c3'
     }
   },
   {
-    name: "Blood Red",
-    emoji: "2️⃣0️⃣",
+    name: "Emergency Red",
+    emoji: "🚨",
     colors: {
-      bgcolor: '100000',
-      passedcolor: 'dc2626',
-      currentcolor: 'ef4444',
-      futurecolor: '2d0000',
+      bgcolor: '1a0808',
+      passedcolor: 'ef4444',
+      currentcolor: 'f87171',
+      futurecolor: '2e1414',
       textcolor: 'fee2e2'
     }
   }
 ];
-
 // iOS Device Presets
 const IOS_DEVICES = [
   { name: "iPhone 16 Pro Max", width: 1320, height: 2868 },
@@ -341,6 +542,8 @@ export default function App() {
   const [carouselApi, setCarouselApi] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedDevice, setSelectedDevice] = useState('');
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewSrc, setPreviewSrc] = useState('');
 
   // Track carousel changes
   useEffect(() => {
@@ -519,6 +722,8 @@ export default function App() {
     const bottomText = `${daysLeft}d left • ${percentComplete}%`;
     ctx.fillText(bottomText, config.width / 2, bottomY);
 
+    setPreviewSrc(canvas.toDataURL());
+
   }, [config]);
 
   // Handle input changes with validation
@@ -619,15 +824,45 @@ export default function App() {
   };
 
   // Copy URL to clipboard
+  // Copy URL to clipboard
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText(wallpaperUrl);
-      toast.success('URL copied to clipboard!');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(wallpaperUrl);
+        toast.success('URL copied to clipboard!');
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      } else {
+        throw new Error('Clipboard API unavailable');
+      }
     } catch (err) {
-      console.error('Failed to copy:', err);
-      toast.error('Failed to copy URL');
+      // Fallback for non-secure contexts (mobile dev)
+      try {
+        const textArea = document.createElement("textarea");
+        textArea.value = wallpaperUrl;
+
+        // Ensure it's not visible but part of DOM
+        textArea.style.position = "fixed";
+        textArea.style.left = "-9999px";
+        textArea.style.top = "0";
+        document.body.appendChild(textArea);
+
+        textArea.focus();
+        textArea.select();
+
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+
+        if (successful) {
+          toast.success('URL copied to clipboard!');
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } else {
+          toast.error('Press Long on URL to copy manually');
+        }
+      } catch (fallbackErr) {
+        toast.error('Press Long on URL to copy manually');
+      }
     }
   };
 
@@ -654,41 +889,33 @@ export default function App() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-background via-muted/30 to-accent/10">
-      {/* Hero Section */}
-      <div className="relative overflow-hidden border-b border-border/50 bg-background/80 backdrop-blur-sm">
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-accent/5" />
-        <div className="relative max-w-7xl mx-auto px-6 py-12">
-          <div className="flex items-start justify-between">
-            <div>
-              <h1 className="text-5xl md:text-6xl font-bold tracking-tight bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
-                CalWall Studio
-              </h1>
-              <p className="mt-3 text-lg text-muted-foreground max-w-2xl">
-                Create stunning calendar wallpapers with real-time customization
-              </p>
-            </div>
-            <Button
-              onClick={toggleDarkMode}
-              variant="outline"
-              size="icon"
-              className="shrink-0"
-              aria-label="Toggle dark mode"
-            >
-              {isDarkMode ? (
-                <Sun className="w-5 h-5" />
-              ) : (
-                <Moon className="w-5 h-5" />
-              )}
-            </Button>
-          </div>
+      {/* Header */}
+      <header className="border-b border-border/50 bg-background/80 backdrop-blur-sm sticky top-0 z-30">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-primary tracking-tight">
+            CalWall
+          </h1>
+          <Button
+            onClick={toggleDarkMode}
+            variant="outline"
+            size="icon"
+            className="shrink-0"
+            aria-label="Toggle dark mode"
+          >
+            {isDarkMode ? (
+              <Sun className="w-5 h-5 text-primary" />
+            ) : (
+              <Moon className="w-5 h-5 text-primary" />
+            )}
+          </Button>
         </div>
-      </div>
+      </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid lg:grid-cols-2 gap-8">
-          {/* Left Side - Device Preview */}
-          <div className="flex flex-col items-center justify-center">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+        <div className="grid lg:grid-cols-2 gap-6 lg:gap-8">
+          {/* Left Side - Device Preview (Hidden on Mobile) */}
+          <div className="hidden lg:flex flex-col items-center justify-center">
             <Card className="w-full max-w-md bg-card/50 backdrop-blur-sm border-border/50 shadow-2xl">
               <CardHeader className="text-center">
                 <CardTitle className="text-2xl">Live Preview</CardTitle>
@@ -703,12 +930,48 @@ export default function App() {
                     <div className="absolute top-0 left-1/2 -translate-x-1/2 w-32 h-7 bg-muted-foreground/30 rounded-b-3xl z-10" />
 
                     {/* Screen */}
-                    <div className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden aspect-[9/19.5] w-64 shadow-inner flex items-center justify-center">
+                    <div className="relative bg-white dark:bg-zinc-900 rounded-[2.5rem] overflow-hidden aspect-[9/19.5] w-64 shadow-inner flex items-center justify-center group">
                       {/* Canvas Wallpaper */}
                       <canvas
                         ref={canvasRef}
                         className="max-w-full max-h-full object-cover"
                       />
+
+                      {/* iOS Lock Screen Overlay (Desktop Preview - Small Scale) */}
+                      <div className="absolute inset-0 pointer-events-none z-20 flex flex-col text-white opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        {/* Status Bar */}
+                        <div className="pt-3 px-5 flex justify-between items-center">
+                          <span className="text-[10px] font-semibold tracking-wide ml-1">9:41</span>
+                          <div className="flex items-center gap-1 mr-1">
+                            <Signal className="w-3 h-3 fill-current" />
+                            <Wifi className="w-3 h-3" />
+                            <Battery className="w-3.5 h-3.5 fill-current" />
+                          </div>
+                        </div>
+
+                        {/* Clock & Date */}
+                        <div className="mt-8 flex flex-col items-center drop-shadow-md">
+                          <span className="text-[10px] font-medium opacity-90">Monday, January 14</span>
+                          <span className="text-5xl font-bold tracking-tighter leading-none font-sans">9:41</span>
+                        </div>
+
+                        <div className="flex-1" />
+
+                        {/* Bottom Buttons */}
+                        <div className="px-6 mb-4 flex justify-between items-end w-full">
+                          <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                            <Flashlight className="w-4 h-4 text-white fill-white/20" />
+                          </div>
+                          <div className="w-8 h-8 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center">
+                            <Camera className="w-4 h-4 text-white fill-white/20" />
+                          </div>
+                        </div>
+
+                        {/* Home Bar */}
+                        <div className="w-full flex justify-center pb-2">
+                          <div className="w-24 h-1 bg-white rounded-full opacity-60" />
+                        </div>
+                      </div>
                     </div>
 
                     {/* Side Buttons */}
@@ -731,7 +994,7 @@ export default function App() {
                           Set Wallpaper
                         </Button>
                       </DialogTrigger>
-                      <DialogContent className="max-w-[95vw] sm:max-w-2xl md:max-w-3xl max-h-[85vh] flex flex-col p-4 sm:p-6">
+                      <DialogContent className="max-w-[85vw] sm:max-w-2xl md:max-w-3xl max-h-[85vh] flex flex-col p-3 sm:p-6">
                         <DialogHeader className="shrink-0">
                           <DialogTitle className="text-xl sm:text-2xl">Set Up Your Dynamic Wallpaper</DialogTitle>
                           <DialogDescription className="text-sm">
@@ -745,62 +1008,62 @@ export default function App() {
                               {/* Step 1: Configuration */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">1</span>
-                                      Your Configuration
+                                  <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">1</span>
+                                      Configuration
                                     </CardTitle>
-                                    <CardDescription>Review your wallpaper settings</CardDescription>
+                                    <CardDescription className="text-xs">Review your settings</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <div className="grid grid-cols-2 md:grid-cols-2 gap-4 p-4 bg-muted rounded-lg">
+                                  <CardContent className="space-y-3 p-4 pt-0">
+                                    <div className="grid grid-cols-2 gap-2 p-3 bg-muted rounded-lg text-sm">
                                       <div>
-                                        <Label className="text-muted-foreground text-sm">Layout Style</Label>
-                                        <p className="text-lg font-semibold capitalize">{config.mode}</p>
+                                        <Label className="text-muted-foreground text-xs">Style</Label>
+                                        <p className="font-semibold capitalize">{config.mode}</p>
                                       </div>
                                       <div>
-                                        <Label className="text-muted-foreground text-sm">Dimensions</Label>
-                                        <p className="text-lg font-semibold">{config.width} × {config.height}</p>
+                                        <Label className="text-muted-foreground text-xs">Size</Label>
+                                        <p className="font-semibold">{config.width}×{config.height}</p>
                                       </div>
                                       <div>
-                                        <Label className="text-muted-foreground text-sm">Columns</Label>
-                                        <p className="text-lg font-semibold">{config.cols}</p>
+                                        <Label className="text-muted-foreground text-xs">Cols</Label>
+                                        <p className="font-semibold">{config.cols}</p>
                                       </div>
                                       <div>
-                                        <Label className="text-muted-foreground text-sm">Timezone</Label>
-                                        <p className="text-lg font-semibold">UTC {config.timezone > 0 ? '+' : ''}{config.timezone}</p>
+                                        <Label className="text-muted-foreground text-xs">UTC</Label>
+                                        <p className="font-semibold">{config.timezone > 0 ? '+' : ''}{config.timezone}</p>
                                       </div>
                                     </div>
 
-                                    <div className="space-y-2">
-                                      <Label className="text-muted-foreground text-sm">Theme Colors</Label>
-                                      <div className="flex flex-wrap gap-2 p-4 bg-muted rounded-lg">
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded border border-border" style={{ backgroundColor: `#${config.bgcolor}` }} />
-                                          <span className="text-xs">BG</span>
+                                    <div className="space-y-1">
+                                      <Label className="text-muted-foreground text-xs">Colors</Label>
+                                      <div className="flex flex-wrap gap-2 p-2 bg-muted rounded-lg">
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.bgcolor}` }} />
+                                          <span className="text-[10px]">BG</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded border border-border" style={{ backgroundColor: `#${config.passedcolor}` }} />
-                                          <span className="text-xs">Passed</span>
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.passedcolor}` }} />
+                                          <span className="text-[10px]">Pass</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded border border-border" style={{ backgroundColor: `#${config.currentcolor}` }} />
-                                          <span className="text-xs">Current</span>
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.currentcolor}` }} />
+                                          <span className="text-[10px]">Now</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded border border-border" style={{ backgroundColor: `#${config.futurecolor}` }} />
-                                          <span className="text-xs">Future</span>
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.futurecolor}` }} />
+                                          <span className="text-[10px]">Next</span>
                                         </div>
-                                        <div className="flex items-center gap-2">
-                                          <div className="w-6 h-6 rounded border border-border" style={{ backgroundColor: `#${config.textcolor}` }} />
-                                          <span className="text-xs">Text</span>
+                                        <div className="flex items-center gap-1.5">
+                                          <div className="w-5 h-5 rounded border border-border" style={{ backgroundColor: `#${config.textcolor}` }} />
+                                          <span className="text-[10px]">Text</span>
                                         </div>
                                       </div>
                                     </div>
 
-                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                                      <p className="text-sm text-foreground">
-                                        <strong>Note:</strong> Your wallpaper will automatically update based on your {config.mode === 'month' ? 'monthly' : 'yearly'} progress.
+                                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                      <p className="text-xs text-foreground">
+                                        Updates based on your {config.mode === 'month' ? 'monthly' : 'yearly'} progress.
                                       </p>
                                     </div>
                                   </CardContent>
@@ -810,48 +1073,48 @@ export default function App() {
                               {/* Step 2: Shortcuts Setup */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">2</span>
-                                      Create iPhone Automation
+                                  <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">2</span>
+                                      iPhone Automation
                                     </CardTitle>
-                                    <CardDescription>Set up automatic wallpaper updates</CardDescription>
+                                    <CardDescription className="text-xs">Set up automatic updates</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <ol className="space-y-4">
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">1</span>
+                                  <CardContent className="space-y-3 p-4 pt-0">
+                                    <ol className="space-y-2">
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
                                         <div>
-                                          <p className="font-semibold">Open Shortcuts App</p>
-                                          <p className="text-sm text-muted-foreground">Find the Shortcuts app on your iPhone</p>
+                                          <p className="font-semibold text-sm">Open Shortcuts App</p>
+                                          <p className="text-xs text-muted-foreground">Find app on iPhone</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">2</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
                                         <div>
-                                          <p className="font-semibold">Create Automation</p>
-                                          <p className="text-sm text-muted-foreground">Tap "Automation" → "+" → "Create Personal Automation"</p>
+                                          <p className="font-semibold text-sm">Create Automation</p>
+                                          <p className="text-xs text-muted-foreground">"Automation" → "+" → "Personal Automation"</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">3</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
                                         <div>
-                                          <p className="font-semibold">Select "Time of Day"</p>
-                                          <p className="text-sm text-muted-foreground">Choose when to update (e.g., 12:00 AM daily)</p>
+                                          <p className="font-semibold text-sm">Select "Time of Day"</p>
+                                          <p className="text-xs text-muted-foreground">Pick a time (e.g. 12:00 AM)</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">4</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
                                         <div>
-                                          <p className="font-semibold">Run Immediately</p>
-                                          <p className="text-sm text-muted-foreground">Toggle ON "Run Immediately" and tap "Next"</p>
+                                          <p className="font-semibold text-sm">Run Immediately</p>
+                                          <p className="text-xs text-muted-foreground">Toggle ON "Run Immediately"</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">5</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
                                         <div>
-                                          <p className="font-semibold">Create New Shortcut</p>
-                                          <p className="text-sm text-muted-foreground">Tap "New Blank Automation"</p>
+                                          <p className="font-semibold text-sm">New Shortcut</p>
+                                          <p className="text-xs text-muted-foreground">Tap "New Blank Automation"</p>
                                         </div>
                                       </li>
                                     </ol>
@@ -862,40 +1125,40 @@ export default function App() {
                               {/* Step 3: Copy URL */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">3</span>
-                                      Copy Your Wallpaper URL
+                                  <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">3</span>
+                                      Copy URL
                                     </CardTitle>
-                                    <CardDescription>This URL generates your custom wallpaper</CardDescription>
+                                    <CardDescription className="text-xs">Generated from your settings</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-4">
+                                  <CardContent className="space-y-3 p-4 pt-0">
                                     <div className="space-y-2">
-                                      <Label>Your Wallpaper URL</Label>
+                                      <Label className="text-xs">Wallpaper URL</Label>
                                       <div className="flex gap-2">
                                         <Input
                                           value={wallpaperUrl}
                                           readOnly
-                                          className="font-mono text-xs"
+                                          className="font-mono text-[10px] h-8"
                                         />
                                         <Button
                                           onClick={copyToClipboard}
                                           variant="outline"
                                           size="icon"
-                                          className="shrink-0"
+                                          className="shrink-0 h-8 w-8"
                                         >
                                           {copied ? (
-                                            <Check className="w-4 h-4 text-green-500" />
+                                            <Check className="w-3 h-3 text-green-500" />
                                           ) : (
-                                            <Copy className="w-4 h-4" />
+                                            <Copy className="w-3 h-3" />
                                           )}
                                         </Button>
                                       </div>
                                     </div>
 
-                                    <div className="p-4 bg-primary/10 border border-primary/20 rounded-lg">
-                                      <p className="text-sm">
-                                        <strong>Tip:</strong> This URL will always generate your wallpaper with the current settings. Copy it now for the next step!
+                                    <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
+                                      <p className="text-xs">
+                                        <strong>Tip:</strong> Copy this URL now for the next step!
                                       </p>
                                     </div>
                                   </CardContent>
@@ -905,55 +1168,55 @@ export default function App() {
                               {/* Step 4: Configure Shortcut */}
                               <CarouselItem>
                                 <Card className="border-0 shadow-none">
-                                  <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                      <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary text-primary-foreground text-sm font-bold">4</span>
-                                      Configure the Shortcut
+                                  <CardHeader className="p-4 pb-2">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                      <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">4</span>
+                                      Configure Shortcut
                                     </CardTitle>
-                                    <CardDescription>Add actions to download and set wallpaper</CardDescription>
+                                    <CardDescription className="text-xs">Add actions to download wallpaper</CardDescription>
                                   </CardHeader>
-                                  <CardContent className="space-y-4">
-                                    <ol className="space-y-4">
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">1</span>
+                                  <CardContent className="space-y-3 p-4 pt-0">
+                                    <ol className="space-y-2">
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">1</span>
                                         <div>
-                                          <p className="font-semibold">Add "Get Contents of URL"</p>
-                                          <p className="text-sm text-muted-foreground">Search for and add this action</p>
+                                          <p className="font-semibold text-sm">Add "Get Contents of URL"</p>
+                                          <p className="text-xs text-muted-foreground">Search and add action</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">2</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">2</span>
                                         <div>
-                                          <p className="font-semibold">Paste Your URL</p>
-                                          <p className="text-sm text-muted-foreground">Paste the URL you copied in the previous step</p>
+                                          <p className="font-semibold text-sm">Paste Your URL</p>
+                                          <p className="text-xs text-muted-foreground">Paste URL from previous step</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">3</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">3</span>
                                         <div>
-                                          <p className="font-semibold">Add "Set Wallpaper"</p>
-                                          <p className="text-sm text-muted-foreground">Search for and add "Set Wallpaper" action</p>
+                                          <p className="font-semibold text-sm">Add "Set Wallpaper"</p>
+                                          <p className="text-xs text-muted-foreground">Search and add action</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">4</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">4</span>
                                         <div>
-                                          <p className="font-semibold">Disable Options</p>
-                                          <p className="text-sm text-muted-foreground">Turn OFF "Crop to Subject" and "Show Preview"</p>
+                                          <p className="font-semibold text-sm">Disable Options</p>
+                                          <p className="text-xs text-muted-foreground">Turn OFF "Crop" and "Preview"</p>
                                         </div>
                                       </li>
-                                      <li className="flex gap-3">
-                                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-sm font-bold shrink-0">5</span>
+                                      <li className="flex gap-2">
+                                        <span className="flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 text-primary text-xs font-bold shrink-0">5</span>
                                         <div>
-                                          <p className="font-semibold">Test It!</p>
-                                          <p className="text-sm text-muted-foreground">Tap "Run" to test your automation</p>
+                                          <p className="font-semibold text-sm">Test It!</p>
+                                          <p className="text-xs text-muted-foreground">Tap "Run" to test</p>
                                         </div>
                                       </li>
                                     </ol>
 
-                                    <div className="p-4 bg-green-500/10 border border-green-500/20 rounded-lg">
-                                      <p className="text-sm text-green-700 dark:text-green-400">
-                                        <strong>Success!</strong> Your wallpaper will now update automatically every day. Enjoy your dynamic calendar wallpaper! 🎉
+                                    <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                                      <p className="text-xs text-green-700 dark:text-green-400">
+                                        <strong>Success!</strong> Wallpaper will update daily. Enjoy! 🎉
                                       </p>
                                     </div>
                                   </CardContent>
@@ -976,7 +1239,13 @@ export default function App() {
                                   />
                                 ))}
                               </div>
-                              <CarouselNext className="static translate-y-0" />
+                              {currentStep === 3 ? (
+                                <Button size="sm" onClick={() => setIsModalOpen(false)}>
+                                  Finish
+                                </Button>
+                              ) : (
+                                <CarouselNext className="static translate-y-0" />
+                              )}
                             </div>
                           </Carousel>
                         </div>
@@ -998,9 +1267,9 @@ export default function App() {
               <CardContent>
                 <Tabs defaultValue="basic" className="w-full">
                   <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="basic">Basic</TabsTrigger>
-                    <TabsTrigger value="colors">Colors</TabsTrigger>
-                    <TabsTrigger value="advanced">Advanced</TabsTrigger>
+                    <TabsTrigger value="basic" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Basic</TabsTrigger>
+                    <TabsTrigger value="colors" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Colors</TabsTrigger>
+                    <TabsTrigger value="advanced" className="data-[state=active]:!bg-primary data-[state=active]:!text-primary-foreground">Advanced</TabsTrigger>
                   </TabsList>
 
                   {/* Basic Settings */}
@@ -1017,7 +1286,7 @@ export default function App() {
                         <option value="">Select a theme...</option>
                         {THEMES.map((theme, index) => (
                           <option key={index} value={index}>
-                            {theme.emoji} {theme.name}
+                            {theme.name}
                           </option>
                         ))}
                       </select>
@@ -1346,17 +1615,111 @@ export default function App() {
                 </Tabs>
               </CardContent>
             </Card>
+
+            <Button
+              className="w-full mt-6 lg:hidden shadow-lg shadow-primary/20"
+              size="lg"
+              onClick={() => setIsModalOpen(true)}
+            >
+              <Download className="w-4 h-4 mr-2" />
+              Set Wallpaper
+            </Button>
           </div>
         </div>
       </div>
 
       {/* Footer */}
       <footer className="border-t border-border/50 py-8 mt-12 bg-background/50 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">Built with CalWall API</p>
-          <p className="text-xs text-muted-foreground">Real-time wallpaper generation</p>
+        <div className="max-w-7xl mx-auto px-6 text-center">
+          <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
+            Made by <span className="text-primary underline decoration-primary font-medium">Abdullah</span>
+            <Heart className="w-4 h-4 text-primary fill-primary inline-block ml-1" />
+          </p>
         </div>
       </footer>
+
+      {/* Mobile Floating Preview */}
+      <div className="fixed bottom-6 left-6 z-50 lg:hidden flex flex-col items-center gap-2">
+        <span className="bg-background/80 backdrop-blur text-foreground text-[10px] px-2 py-1 rounded-full shadow-sm border border-primary animate-bounce">
+          Tap to Expand
+        </span>
+        <div
+          onClick={() => setIsPreviewOpen(true)}
+          className="w-16 h-28 sm:w-20 sm:h-40 bg-gradient-to-br from-muted to-muted-foreground/20 border-4 border-muted rounded-[1.2rem] sm:rounded-[1.5rem] shadow-2xl overflow-hidden cursor-pointer hover:scale-105 transition-transform hover:shadow-primary/20 hover:border-muted-foreground/50 flex items-center justify-center relative"
+        >
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 w-6 sm:w-8 h-1 bg-muted-foreground/30 rounded-full z-10" />
+          {previewSrc ? (
+            <img
+              src={previewSrc}
+              alt="Preview"
+              className="w-full h-full object-cover rounded-[1rem] sm:rounded-[1.2rem]"
+            />
+          ) : (
+            <span className="text-[10px] text-muted-foreground font-medium">Preview</span>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile Preview Modal */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-[100vw] h-[100vh] flex flex-col items-center justify-center p-0 bg-background/80 border-none backdrop-blur-sm">
+          <div className="absolute top-12 left-0 right-0 z-50 flex justify-center pointer-events-none">
+            <span className="bg-black/60 backdrop-blur-md text-white text-xs px-3 py-1.5 rounded-full shadow-lg border border-primary animate-in fade-in zoom-in duration-500">
+              Tap screen to close
+            </span>
+          </div>
+          <div className="relative w-full h-full flex items-center justify-center p-8 sm:p-12" onClick={() => setIsPreviewOpen(false)}>
+            <div className="relative max-h-[85vh] max-w-[85vw] aspect-[9/19.5] rounded-[2.5rem] sm:rounded-[3rem] overflow-hidden shadow-2xl bg-gradient-to-br from-muted to-muted-foreground/20 p-2 sm:p-3">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 sm:w-32 h-6 sm:h-7 bg-muted-foreground/30 rounded-b-2xl sm:rounded-b-3xl z-10" />
+              <div className="relative w-full h-full rounded-[2rem] sm:rounded-[2.5rem] overflow-hidden bg-background">
+                {previewSrc && (
+                  <img
+                    src={previewSrc}
+                    alt="Full Preview"
+                    className="w-full h-full object-cover"
+                  />
+                )}
+
+                {/* iOS Lock Screen Overlay (Mobile Modal) */}
+                <div className="absolute inset-0 pointer-events-none z-20 flex flex-col text-white">
+                  {/* Status Bar */}
+                  <div className="pt-3 sm:pt-4 px-6 sm:px-8 flex justify-between items-center">
+                    <span className="text-sm font-semibold tracking-wide ml-2">9:41</span>
+                    <div className="flex items-center gap-1.5 mr-2">
+                      <Signal className="w-4 h-4 fill-current" />
+                      <Wifi className="w-4 h-4" />
+                      <Battery className="w-5 h-5 fill-current" />
+                    </div>
+                  </div>
+
+                  {/* Clock & Date */}
+                  <div className="mt-12 sm:mt-16 flex flex-col items-center drop-shadow-lg text-center">
+                    <span className="text-base sm:text-lg font-medium opacity-90">Monday, January 14</span>
+                    <span className="text-7xl sm:text-8xl font-bold tracking-tighter leading-none font-sans">9:41</span>
+                  </div>
+
+                  <div className="flex-1" />
+
+                  {/* Bottom Buttons */}
+                  <div className="px-8 sm:px-10 mb-8 sm:mb-10 flex justify-between items-end w-full">
+                    <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/50 transition-colors">
+                      <Flashlight className="w-6 h-6 text-white fill-white/20" />
+                    </div>
+                    <div className="w-12 h-12 rounded-full bg-black/40 backdrop-blur-md flex items-center justify-center hover:bg-black/50 transition-colors">
+                      <Camera className="w-6 h-6 text-white fill-white/20" />
+                    </div>
+                  </div>
+
+                  {/* Home Bar */}
+                  <div className="w-full flex justify-center pb-3">
+                    <div className="w-32 h-1 bg-white rounded-full opacity-60 shadow-sm" />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Toast Notifications */}
       <Toaster />
